@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'index')}">
+<head>
+    <title>Strage List</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Strages</h1>
+
+<table>
+<thead>
+<tr>
+ <th>
+  ID
+ </th>
+ <th>
+  Status
+ </th>
+</tr>
+</thead>
+<tbody>
+<tr class="strage-table" th:each="available : ${availables}">
+ <td>
+  <a th:href="@{'/webdav/' + ${nameMap.get(available.key)}}">[[${available.key}]]</a>
+ </td>
+ <td class="status">
+  ✅
+ </td>
+</tr>
+
+<tr th:each="error : ${errors}">
+ <td>
+  [[${error.key}]]
+ </td>
+ <td class="status">
+  <a th:href="@{/login(id=${error.key})}">🔒</a>
+ </td>
+</tr>
+
+</tbody>
+</table>
+
+</div>
+
+</body>
+</html>
