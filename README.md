@@ -1,42 +1,41 @@
-# java-getting-started
+# ![Cloud Storage icon by Icons8](https://img.icons8.com/nolan/64/cloud-storage.png) vavi-apps-webdav
 
-[![CircleCI](https://circleci.com/gh/heroku/java-getting-started.svg?style=svg)](https://circleci.com/gh/heroku/java-getting-started)
+Gathering any kind of cloud storages into one webdav strage!
 
-A barebones Java app, which can easily be deployed to Heroku.
-
-This application supports the [Getting Started with Java on Heroku](https://devcenter.heroku.com/articles/getting-started-with-java) article - check it out.
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-## Running Locally
-
-Make sure you have Java and Maven installed.  Also, install the [Heroku CLI](https://cli.heroku.com/).
-
-```sh
-$ git clone https://github.com/heroku/java-getting-started.git
-$ cd java-getting-started
-$ mvn install
-$ heroku local:start
-```
-
-Your app should now be running on [localhost:5000](http://localhost:5000/).
-
-If you're going to use a database, ensure you have a local `.env` file that reads something like this:
+## Image
 
 ```
-DATABASE_URL=postgres://localhost:5432/java_database_name
+vavi-apps-webdav +
+                 +- googledrive1
+                 +- googledrive2
+                 +- onedrive
+                 +- dropbpx
+                 +- box
+                 :
 ```
 
-## Deploying to Heroku
+## Installation
 
-```sh
-$ heroku create
-$ git push heroku master
-$ heroku open
-```
+ * [Running Locally](https://github.com/umjammer/vavi-apps-webdav/wiki/RunningLocally)
+ * [Deploying to Heroku](https://github.com/umjammer/vavi-apps-webdav/wiki/DeployingToHeroku)
 
-## Documentation
+## Usage
 
-For more information about using Java on Heroku, see these Dev Center articles:
+### Admin
 
-- [Java on Heroku](https://devcenter.heroku.com/categories/java)
+access https://your-heroku-app.herokuapp.com/admin/list
+
+https basic authentication: enter admin/${WEBDAV_ADMIN_PASSWORD}
+
+
+### User
+
+access https://your-heroku-app.herokuapp.com/webdav using webdav client
+
+https basic authentication: enter user/${WEBDAV_USER_PASSWORD}
+
+
+----
+<sub>
+[Cloud Storage icon by Icons8](https://icons8.com/icon/44790/cloud-storage)
+</sub>
