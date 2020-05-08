@@ -8,7 +8,6 @@ package vavi.net.webdav.auth.dropbox;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Locale;
 
 import javax.servlet.http.HttpSession;
@@ -53,7 +52,7 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
     private DbxWebAuth webAuth;
 
     /** */
-    private String authorizeUrl;
+    private URI authorizeUrl;
 
     /** */
     private String redirectUri;
@@ -77,7 +76,7 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
         webAuth = new DbxWebAuth(requestConfig, appInfo);
         Request request = Request.newBuilder().withRedirectUri(appCredential.getRedirectUrl(), csrfTokenStore).build();
 
-        authorizeUrl = webAuth.authorize(request);
+        authorizeUrl = URI.create(webAuth.authorize(request));
     }
 
     /** */
@@ -97,11 +96,7 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
 
     @Override
     public URI getAuthorizationUrl() {
-        try {
-            return new URI(authorizeUrl);
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return authorizeUrl;
     }
 
     @Override

@@ -87,7 +87,7 @@ LOG.debug("id: " + id);
         } else {
             model.addAttribute("error", error);
             model.addAttribute("errorDescription", errorDescription);
-            return "onedrive";
+            return "app_error";
         }
     }
 
@@ -103,7 +103,7 @@ LOG.debug("id: " + id);
         } else {
             model.addAttribute("error", error);
             model.addAttribute("errorDescription", errorDescription);
-            return "onedrive";
+            return "app_error";
         }
     }
 
@@ -119,7 +119,7 @@ LOG.debug("id: " + id);
         } else {
             model.addAttribute("error", error);
             model.addAttribute("errorDescription", errorDescription);
-            return "onedrive";
+            return "app_error";
         }
     }
 
@@ -135,7 +135,7 @@ LOG.debug("id: " + id);
         } else {
             model.addAttribute("error", error);
             model.addAttribute("errorDescription", errorDescription);
-            return "onedrive";
+            return "app_error";
         }
     }
 }

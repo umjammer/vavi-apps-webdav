@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -40,12 +41,14 @@ public class Test2 {
 
     public static void main(String[] args) throws Exception {
         Test2 app = new Test2();
-        PropsEntity.Util.bind(app);
+//        PropsEntity.Util.bind(app);
 System.err.println(app.url);
 //        app.drop();
 //        app.create();
 //        app.insert();
+//        app.update("box:your@id.com");
         app.select();
+//        app.select("box:your@id.com");
 
         System.err.println("done");
     }
@@ -66,7 +69,7 @@ System.err.println(app.url);
 
     void insert() throws SQLException, IOException {
         try (Connection connection = DriverManager.getConnection(url, user, password)) {
-            Statement stmt = connection.createStatement();
+            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO credential VALUES (?, ?)");
 
             LocalStrageDao local = new LocalStrageDao("tmp/database.properties");
             for (String schemeId : local.load()) {
@@ -84,10 +87,20 @@ System.err.println(app.url);
                     if (scheme.equals("msgraph")) {
                         scheme = "onedrive";
                     }
-                    stmt.executeUpdate("INSERT INTO credential VALUES ('" + scheme + ":" + email + "', '" + token + "')");
+                    pstmt.setString(1, scheme + ":" + email);
+                    pstmt.setString(2, token);
+                    pstmt.execute();
 System.err.println("DB: id: " + schemeId);
                 }
             }
+        }
+    }
+
+    void update(String id) throws SQLException, IOException {
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
+            PreparedStatement pstmt = connection.prepareStatement("UPDATE credential SET token = NULL WHERE id = ?");
+            pstmt.setString(1, id);
+            pstmt.execute();
         }
     }
 
@@ -98,6 +111,17 @@ System.err.println("DB: id: " + schemeId);
 
             while (rs.next()) {
 System.err.println("DB: { id: " + rs.getString("id") + ", token: " + rs.getString("token") + " }");
+            }
+        }
+    }
+
+    void select(String id) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
+            PreparedStatement pstmt = connection.prepareStatement("SELECT token FROM credential WHERE id = ?");
+            pstmt.setString(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+System.err.println("DB: { id: " + id + ", token: " + rs.getString("token") + " }");
             }
         }
     }

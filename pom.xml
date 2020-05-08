@@ -127,7 +127,7 @@ $ git push heroku master &amp;&amp; heroku logs -t
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-apps-fuse</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.9</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.jackrabbit</groupId>

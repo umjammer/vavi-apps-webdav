@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.box.sdk.BoxAPIConnection;
 
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.net.webdav.auth.WebOAuth2;
-import vavi.util.Debug;
 import vavi.util.StringUtil;
 
 
@@ -27,6 +29,8 @@ import vavi.util.StringUtil;
  * @version 0.00 2019/07/04 umjammer initial version <br>
  */
 public class BoxWebOAuth2 implements WebOAuth2<String, BoxAPIConnection> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BoxWebOAuth2.class);
 
     /** */
     private WebAppCredential appCredential;
@@ -47,7 +51,7 @@ public class BoxWebOAuth2 implements WebOAuth2<String, BoxAPIConnection> {
         api.setAutoRefresh(true);
 
         String save = api.save();
-Debug.println("save: " + save);
+LOG.debug("save [" + appCredential.getScheme() + ":" + id + "]: " + save);
         appCredential.getStrageDao().update(appCredential.getScheme() + ":" + id, save);
 
         return api;

@@ -6,7 +6,13 @@
 
 package vavi.apps.webdav;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -15,13 +21,18 @@ import org.cryptomator.webdav.core.filters.MacChunkedPutCompatibilityFilter;
 import org.cryptomator.webdav.core.filters.UnicodeResourcePathNormalizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
+import com.github.fge.filesystem.box.provider.BoxFileSystemProvider;
+import com.github.fge.fs.dropbox.provider.DropBoxFileSystemProvider;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -29,6 +40,8 @@ import vavi.net.webdav.JavaFsWebDavServlet;
 import vavi.net.webdav.SqlStrageDao;
 import vavi.net.webdav.WebdavService;
 import vavi.net.webdav.auth.StrageDao;
+import vavi.net.webdav.auth.WebOAuth2;
+import vavi.net.webdav.auth.WebUserCredential;
 import vavi.net.webdav.auth.box.BoxWebAppCredential;
 import vavi.net.webdav.auth.box.BoxWebOAuth2;
 import vavi.net.webdav.auth.dropbox.DropBoxWebAppCredential;
@@ -37,6 +50,8 @@ import vavi.net.webdav.auth.google.GoogleWebAppCredential;
 import vavi.net.webdav.auth.google.GoogleWebAuthenticator;
 import vavi.net.webdav.auth.microsoft.MicrosoftWebAppCredential;
 import vavi.net.webdav.auth.microsoft.MicrosoftWebOAuth2;
+import vavi.nio.file.googledrive.GoogleDriveFileSystemProvider;
+import vavi.nio.file.onedrive4.OneDriveFileSystemProvider;
 
 
 /**
@@ -46,7 +61,10 @@ import vavi.net.webdav.auth.microsoft.MicrosoftWebOAuth2;
  * @version 0.00 2020/05/05 umjammer initial version <br>
  */
 @Configuration
+@ComponentScan("vavi.net.webdav")
 public class Config {
+
+//    private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     @Value("${spring.datasource.url}")
     private String dbUrl;
@@ -129,28 +147,79 @@ public class Config {
     }
 
     @Bean
-    public MicrosoftWebOAuth2 microsoftWebOAuth2(@Autowired MicrosoftWebAppCredential microsoftAppCredential) {
-        return new MicrosoftWebOAuth2(microsoftAppCredential);
-    }
-
-    @Bean
-    public GoogleWebAuthenticator googleWebOAuth2(@Autowired GoogleWebAppCredential googleAppCredential) {
-        return new GoogleWebAuthenticator(googleAppCredential);
-    }
-
-    @Bean
-    public BoxWebOAuth2 boxWebOAuth2(@Autowired BoxWebAppCredential boxAppCredential) {
-        return new BoxWebOAuth2(boxAppCredential);
-    }
-
-    @Bean
-    public DropBoxWebOAuth2 dropBoxWebOAuth2(@Autowired DropBoxWebAppCredential dropboxAppCredential) {
-        return new DropBoxWebOAuth2(dropboxAppCredential);
-    }
-
-    @Bean
     public WebdavService webdavService() {
         return new WebdavService();
+    }
+
+    @Autowired
+    MicrosoftWebAppCredential microsoftAppCredential;
+    @Autowired
+    GoogleWebAppCredential googleAppCredential;
+    @Autowired
+    BoxWebAppCredential boxAppCredential;
+    @Autowired
+    DropBoxWebAppCredential dropboxAppCredential;
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public WebOAuth2<?, ?> getWebOAuth2(String scheme) throws IOException {
+        switch (scheme) {
+        case "onedrive":
+            return new MicrosoftWebOAuth2(microsoftAppCredential);
+        case "googledrive":
+            return new GoogleWebAuthenticator(googleAppCredential);
+        case "box":
+            return new BoxWebOAuth2(boxAppCredential);
+        case "dropbox":
+            return new DropBoxWebOAuth2(dropboxAppCredential);
+        default:
+            throw new IllegalArgumentException("unsupported scheme: " + scheme);
+        }
+    }
+
+    /**
+     * @param id 'scheme:id' i.e. 'onedrive:foo@bar.com'
+     */
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public FileSystem getFileSystem(String id) throws IOException {
+        String[] part1s = id.split(":");
+        if (part1s.length < 2) {
+            throw new IllegalArgumentException("bad 2nd path component: should be 'scheme:id' i.e. 'onedrive:foo@bar.com'");
+        }
+        String scheme = part1s[0];
+        String idForScheme = part1s[1];
+
+        URI uri = URI.create(scheme + ":///");
+        Map<String, Object> env = new HashMap<>();
+        switch (scheme) {
+        case "onedrive":
+            env.put(OneDriveFileSystemProvider.ENV_APP_CREDENTIAL, microsoftAppCredential);
+            env.put(OneDriveFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
+            env.put("ignoreAppleDouble", true);
+            break;
+        case "googledrive":
+            env.put(GoogleDriveFileSystemProvider.ENV_APP_CREDENTIAL, googleAppCredential);
+            env.put(GoogleDriveFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
+            env.put("ignoreAppleDouble", true);
+            break;
+        case "box":
+            env.put(BoxFileSystemProvider.ENV_APP_CREDENTIAL, boxAppCredential);
+            env.put(BoxFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
+            env.put("ignoreAppleDouble", true);
+            break;
+        case "dropbox":
+            env.put(DropBoxFileSystemProvider.ENV_APP_CREDENTIAL, dropboxAppCredential);
+            env.put(DropBoxFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
+            env.put("ignoreAppleDouble", true);
+            break;
+        default:
+            throw new IllegalArgumentException("unsupported scheme: " + scheme);
+        }
+
+        // https://github.com/spring-projects/spring-boot/issues/7110#issuecomment-252247036
+        FileSystem fs = FileSystems.newFileSystem(uri, env, Thread.currentThread().getContextClassLoader());
+        return fs;
     }
 }
 

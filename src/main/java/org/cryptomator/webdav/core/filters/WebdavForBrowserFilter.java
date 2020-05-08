@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2020 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 package org.cryptomator.webdav.core.filters;
 
 import java.io.IOException;
@@ -11,6 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * WebdavForBrowserFilter.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
+ * @version 0.00 2020/05/08 umjammer initial version <br>
+ */
 public class WebdavForBrowserFilter implements HttpFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebdavForBrowserFilter.class);

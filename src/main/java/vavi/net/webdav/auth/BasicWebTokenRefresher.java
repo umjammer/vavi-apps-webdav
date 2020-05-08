@@ -9,9 +9,11 @@ package vavi.net.webdav.auth;
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import vavi.net.auth.oauth2.AppCredential;
 import vavi.net.auth.oauth2.BaseTokenRefresher;
-import vavi.util.Debug;
 
 
 /**
@@ -21,6 +23,8 @@ import vavi.util.Debug;
  * @version 0.00 2019/07/03 umjammer initial version <br>
  */
 public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BasicWebTokenRefresher.class);
 
     private String schemeId;
 
@@ -35,14 +39,14 @@ public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
 
     @Override
     public void writeRefreshToken(String refreshToken) throws IOException {
-Debug.println("save refreshToken: " + refreshToken);
+LOG.debug("save refreshToken [" + schemeId + "]: " + refreshToken);
         appCredential.getStrageDao().update(schemeId, refreshToken);
     }
 
     @Override
     public String readRefreshToken() throws IOException {
         String refreshToken = appCredential.getStrageDao().select(schemeId);
-Debug.println("load refreshToken: " + refreshToken);
+LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
         return refreshToken;
     }
 
