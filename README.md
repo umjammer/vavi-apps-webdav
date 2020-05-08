@@ -37,5 +37,5 @@ https basic authentication: enter user/${WEBDAV_USER_PASSWORD}
 
 ----
 <sub>
-[Cloud Storage icon by Icons8](https://icons8.com/icon/44790/cloud-storage)
+<a href="https://icons8.com/icon/44790/cloud-storage">Cloud Storage icon by Icons8</a>
 </sub>
