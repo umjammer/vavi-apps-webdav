@@ -18,7 +18,6 @@ import com.google.api.services.drive.DriveScopes;
 
 import vavi.net.auth.oauth2.google.GoogleBaseAppCredential;
 import vavi.net.auth.oauth2.google.GoogleOAuth2;
-import vavi.net.webdav.auth.StrageDao;
 
 
 /**
@@ -35,7 +34,7 @@ public class GoogleWebAppCredential extends GoogleBaseAppCredential {
     private static final String APPLICATION_NAME = "vavi-apps-webdav";
 
     @Autowired
-    private StrageDao dao;
+    private DataStoreFactory dataStoreFactory;
 
     /** */
     public GoogleWebAppCredential() {
@@ -70,7 +69,7 @@ public class GoogleWebAppCredential extends GoogleBaseAppCredential {
 
     /** */
     public DataStoreFactory getDataStoreFactory() throws IOException {
-        return new SqlDataStoreFactory(dao);
+        return dataStoreFactory;
     }
 }
 

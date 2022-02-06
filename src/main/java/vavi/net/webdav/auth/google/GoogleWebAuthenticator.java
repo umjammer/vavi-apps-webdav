@@ -58,7 +58,7 @@ public class GoogleWebAuthenticator implements Authenticator<Object, Credential>
                                                            appCredential.getRawData(),
                                                            Arrays.asList(appCredential.getScope()))
                     .setDataStoreFactory(appCredential.getDataStoreFactory())
-                    .setAccessType("offline")
+                    .setAccessType(appCredential.getAccessType())
                     .build();
 
             redirectUrl = appCredential.getRedirectUrl();

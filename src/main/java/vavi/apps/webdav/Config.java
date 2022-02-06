@@ -33,13 +33,13 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 import com.github.fge.filesystem.box.provider.BoxFileSystemProvider;
 import com.github.fge.fs.dropbox.provider.DropBoxFileSystemProvider;
+import com.google.api.client.util.store.DataStoreFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import vavi.net.webdav.JavaFsWebDavServlet;
-import vavi.net.webdav.SqlStrageDao;
+import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.WebdavService;
-import vavi.net.webdav.auth.StrageDao;
 import vavi.net.webdav.auth.WebOAuth2;
 import vavi.net.webdav.auth.WebUserCredential;
 import vavi.net.webdav.auth.box.BoxWebAppCredential;
@@ -48,6 +48,7 @@ import vavi.net.webdav.auth.dropbox.DropBoxWebAppCredential;
 import vavi.net.webdav.auth.dropbox.DropBoxWebOAuth2;
 import vavi.net.webdav.auth.google.GoogleWebAppCredential;
 import vavi.net.webdav.auth.google.GoogleWebAuthenticator;
+import vavi.net.webdav.auth.google.DaoDataStoreFactory;
 import vavi.net.webdav.auth.microsoft.MicrosoftWebAppCredential;
 import vavi.net.webdav.auth.microsoft.MicrosoftWebOAuth2;
 import vavi.nio.file.googledrive.GoogleDriveFileSystemProvider;
@@ -159,6 +160,11 @@ public class Config {
     BoxWebAppCredential boxAppCredential;
     @Autowired
     DropBoxWebAppCredential dropboxAppCredential;
+
+    @Bean
+    DataStoreFactory dataStoreFactory() {
+        return new DaoDataStoreFactory(strageDao()); // TODO strageDao
+    }
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)

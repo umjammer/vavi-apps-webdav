@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import vavi.net.http.HttpUtil;
 import vavi.net.webdav.auth.OAuthException;
-import vavi.net.webdav.auth.StrageDao;
 import vavi.net.webdav.auth.WebOAuth2;
 import vavi.nio.file.gathered.GatheredFileSystemProvider;
 import vavi.nio.file.gathered.NameMap;

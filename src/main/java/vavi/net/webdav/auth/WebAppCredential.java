@@ -11,6 +11,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import vavi.net.auth.oauth2.BasicAppCredential;
+import vavi.net.webdav.StrageDao;
 import vavi.util.properties.annotation.PropsEntity;
 
 

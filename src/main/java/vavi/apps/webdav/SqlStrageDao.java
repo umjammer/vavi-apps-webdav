@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package vavi.net.webdav;
+package vavi.apps.webdav;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,8 +12,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -21,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import vavi.net.webdav.auth.StrageDao;
+import vavi.net.webdav.StrageDao;
 
 
 /**
@@ -81,33 +82,40 @@ LOG.debug("[" + id + "]: " + rs.getString("token"));
         }
     }
 
-    private static final String googleId = "StoredCredential";
-
     @Override
-    public byte[] selectGoogle() {
+    public Map<String, String> selectAll() {
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM google WHERE id = ?");
-            pstmt.setString(1, googleId);
-            ResultSet rs = pstmt.executeQuery();
-
+            Map<String, String> result = new HashMap<>();
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT id, token FROM credential");
             if (rs.next()) {
-                return rs.getBytes("credentials");
+                String id = rs.getString("id");
+                String token = rs.getString("token");
+LOG.debug("[" + id + "]: " + token);
+                result.put(id, token);
             }
-            throw new NoSuchElementException("credentials");
+            return result;
         } catch (SQLException e) {
             throw new IllegalStateException(e);
         }
     }
 
     @Override
-    public void updateGoogle(byte[] credentials) {
+    public boolean delete(String id) {
         try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
-            PreparedStatement pstmt = connection.prepareStatement("UPDATE google SET credentials = ? WHERE id = ?");
-            pstmt.setBytes(1, credentials);
-            pstmt.setString(2, googleId);
-            pstmt.execute();
-            connection.commit();
+            PreparedStatement pstmt = connection.prepareStatement("DELETE FROM credential WHERE id = ?");
+            pstmt.setString(1, id);
+            return pstmt.execute();
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public boolean deleteAll() {
+        try (Connection connection = dataSource.getConnection()) {
+            Statement stmt = connection.createStatement();
+            return stmt.execute("DELETE FROM credential");
         } catch (SQLException e) {
             throw new IllegalStateException(e);
         }

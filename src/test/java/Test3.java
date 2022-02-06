@@ -31,11 +31,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import vavi.apps.webdav.SqlStrageDao;
 import vavi.net.auth.oauth2.google.GoogleOAuth2;
-import vavi.net.webdav.SqlStrageDao;
-import vavi.net.webdav.auth.StrageDao;
+import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.auth.google.GoogleWebAppCredential;
-import vavi.net.webdav.auth.google.SqlDataStoreFactory;
+import vavi.net.webdav.auth.google.DaoDataStoreFactory;
 import vavi.util.properties.annotation.Env;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -139,7 +139,7 @@ System.err.println("DB: { id: " + rs.getString("id") + ", credentials: " + rs.ge
                                                        GoogleOAuth2.JSON_FACTORY,
                                                        appCredential.getRawData(),
                                                        Arrays.asList(appCredential.getScope()))
-                .setDataStoreFactory(new SqlDataStoreFactory(strageDao))
+                .setDataStoreFactory(new DaoDataStoreFactory(strageDao))
                 .setAccessType("offline")
                 .build();
 

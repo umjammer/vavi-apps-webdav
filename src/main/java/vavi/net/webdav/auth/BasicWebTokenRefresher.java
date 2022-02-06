@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import vavi.net.auth.oauth2.AppCredential;
 import vavi.net.auth.oauth2.BaseTokenRefresher;
+import vavi.net.webdav.StrageDao;
 
 
 /**
@@ -28,31 +29,31 @@ public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
 
     private String schemeId;
 
-    private WebAppCredential appCredential;
+    private StrageDao strageDao;
 
     /** */
     public BasicWebTokenRefresher(AppCredential appCredential, String id, Supplier<Long> refresh) {
         super(refresh);
         this.schemeId = appCredential.getScheme() + ":" + id;
-        this.appCredential = WebAppCredential.class.cast(appCredential);
+        this.strageDao = WebAppCredential.class.cast(appCredential).getStrageDao();
     }
 
     @Override
     public void writeRefreshToken(String refreshToken) throws IOException {
 LOG.debug("save refreshToken [" + schemeId + "]: " + refreshToken);
-        appCredential.getStrageDao().update(schemeId, refreshToken);
+        strageDao.update(schemeId, refreshToken);
     }
 
     @Override
     public String readRefreshToken() throws IOException {
-        String refreshToken = appCredential.getStrageDao().select(schemeId);
+        String refreshToken = strageDao.select(schemeId);
 LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
         return refreshToken;
     }
 
     @Override
     public void dispose() throws IOException {
-        appCredential.getStrageDao().update(schemeId, null);
+        strageDao.update(schemeId, null);
     }
 }
 

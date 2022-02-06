@@ -14,6 +14,7 @@ import com.dropbox.core.json.JsonReadException;
 
 import vavi.net.auth.oauth2.AppCredential;
 import vavi.net.auth.oauth2.TokenRefresher;
+import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.util.Debug;
 
@@ -28,27 +29,27 @@ public class DropBoxWebTokenRefresher implements TokenRefresher<DbxAuthInfo> {
 
     private String schemeId;
 
-    private WebAppCredential appCredential;
+    private StrageDao strageDao;
 
     /**
      * @param refresh you should call {@link #writeRefreshToken(DbxAuthInfo)} and return new refresh delay.
      */
     public DropBoxWebTokenRefresher(AppCredential appCredential, String id, Supplier<Long> refresh) {
         this.schemeId = appCredential.getScheme() + ":" + id;
-        this.appCredential = WebAppCredential.class.cast(appCredential);
+        this.strageDao = WebAppCredential.class.cast(appCredential).getStrageDao();
     }
 
     @Override
     public void writeRefreshToken(DbxAuthInfo authInfo) throws IOException {
 Debug.println("refreshToken: " + authInfo.getRefreshToken());
         String json = DbxAuthInfo.Writer.writeToString(authInfo, true);
-        appCredential.getStrageDao().update(schemeId, json);
+        strageDao.update(schemeId, json);
     }
 
     @Override
     public DbxAuthInfo readRefreshToken() throws IOException {
         try {
-            String json = appCredential.getStrageDao().select(schemeId);
+            String json = strageDao.select(schemeId);
             if (json == null) {
                 return null;
             }
@@ -62,7 +63,7 @@ Debug.println("refreshToken: exists: " + authInfo.getRefreshToken());
 
     @Override
     public void dispose() throws IOException {
-        appCredential.getStrageDao().update(schemeId, null);
+        strageDao.update(schemeId, null);
     }
 
     @Override

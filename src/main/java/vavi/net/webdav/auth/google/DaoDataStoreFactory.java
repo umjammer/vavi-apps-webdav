@@ -19,9 +19,8 @@ import java.io.Serializable;
 
 import com.google.api.client.util.store.AbstractDataStoreFactory;
 import com.google.api.client.util.store.DataStore;
-import com.google.api.client.util.store.SqlDataStore;
 
-import vavi.net.webdav.auth.StrageDao;
+import vavi.net.webdav.StrageDao;
 
 
 /**
@@ -32,23 +31,24 @@ import vavi.net.webdav.auth.StrageDao;
  * @since 1.16
  * @author Yaniv Inbar
  */
-public class SqlDataStoreFactory extends AbstractDataStoreFactory {
+public class DaoDataStoreFactory extends AbstractDataStoreFactory {
 
-//    private static final Logger LOGGER = Logger.getLogger(SqlDataStoreFactory.class.getName());
+//    private static final Logger LOGGER = Logger.getLogger(DaoDataStoreFactory.class.getName());
 
     private StrageDao dao;
 
     /**
      * @param dao
      */
-    public SqlDataStoreFactory(StrageDao dao) {
+    public DaoDataStoreFactory(StrageDao dao) {
         this.dao = dao;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected <V extends Serializable> DataStore<V> createDataStore(String id) throws IOException {
 //      AutowireCapableBeanFactory.
-        return new SqlDataStore<>(this, dao, id);
+        return (DataStore<V>) new DaoDataStore(this, dao, id);
     }
 }
 

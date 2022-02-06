@@ -4,13 +4,14 @@
  * Programmed by Naohide Sano
  */
 
-package vavi.net.webdav.auth;
+package vavi.net.webdav;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
- * Dao.
+ * StrageDao.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/06/23 umjammer initial version <br>
@@ -26,10 +27,13 @@ public interface StrageDao {
     String select(String id);
 
     /** */
-    byte[] selectGoogle();
+    boolean delete(String id);
 
     /** */
-    void updateGoogle(byte[] credentials);
+    boolean deleteAll();
+
+    /** */
+    Map<String, String> selectAll();
 }
 
 /* */
