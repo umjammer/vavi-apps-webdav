@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import vavi.net.auth.oauth2.AppCredential;
+import vavi.net.auth.AppCredential;
 import vavi.net.auth.oauth2.BaseTokenRefresher;
 import vavi.net.webdav.StrageDao;
 
@@ -52,7 +52,7 @@ LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
     }
 
     @Override
-    public void dispose() throws IOException {
+    public void close() {
         strageDao.update(schemeId, null);
     }
 }

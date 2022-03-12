@@ -6,7 +6,7 @@
 
 package vavi.net.webdav.auth;
 
-import vavi.net.auth.oauth2.WithTotpUserCredential;
+import vavi.net.auth.WithTotpUserCredential;
 
 
 /**

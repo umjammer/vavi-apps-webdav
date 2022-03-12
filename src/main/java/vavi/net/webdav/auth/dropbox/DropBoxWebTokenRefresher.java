@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import com.dropbox.core.DbxAuthInfo;
 import com.dropbox.core.json.JsonReadException;
 
-import vavi.net.auth.oauth2.AppCredential;
+import vavi.net.auth.AppCredential;
 import vavi.net.auth.oauth2.TokenRefresher;
 import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.auth.WebAppCredential;
@@ -62,16 +62,12 @@ Debug.println("refreshToken: exists: " + authInfo.getRefreshToken());
     }
 
     @Override
-    public void dispose() throws IOException {
+    public void close() {
         strageDao.update(schemeId, null);
     }
 
     @Override
     public void start(DbxAuthInfo refreshToken, long refreshDelay) throws IOException {
-    }
-
-    @Override
-    public void terminate() {
     }
 }
 

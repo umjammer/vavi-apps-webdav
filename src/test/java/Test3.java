@@ -135,8 +135,9 @@ System.err.println("DB: { id: " + rs.getString("id") + ", credentials: " + rs.ge
     @Test
     void test() throws Exception {
         GoogleWebAppCredential appCredential = new GoogleWebAppCredential();
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(GoogleOAuth2.HTTP_TRANSPORT,
-                                                       GoogleOAuth2.JSON_FACTORY,
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                                                       GoogleOAuth2.getHttpTransport(),
+                                                       GoogleOAuth2.getJsonFactory(),
                                                        appCredential.getRawData(),
                                                        Arrays.asList(appCredential.getScope()))
                 .setDataStoreFactory(new DaoDataStoreFactory(strageDao))

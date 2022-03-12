@@ -8,8 +8,6 @@ package vavi.net.webdav.auth;
 
 import java.net.URI;
 
-import org.scribe.exceptions.OAuthException;
-
 import vavi.net.auth.oauth2.OAuth2;
 
 

@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.1.6.RELEASE</version>
+    <version>2.5.5</version>
     <relativePath/>
   </parent>
 
@@ -42,6 +42,8 @@ $ git push heroku master &amp;&amp; heroku logs -t
     <webjars-jquery.version>3.3.1-1</webjars-jquery.version>
     <jackrabbit.version>2.19.3</jackrabbit.version>
     <guava.version>27.0-jre</guava.version>
+    <vavi-apps-fuse.groupId>com.github.umjammer.vavi-apps-fuse</vavi-apps-fuse.groupId>
+    <vavi-apps-fuse.version>0.1.7</vavi-apps-fuse.version>
   </properties>
 
   <repositories>
@@ -125,37 +127,41 @@ $ git push heroku master &amp;&amp; heroku logs -t
     </dependency>
 
     <dependency>
-      <groupId>com.github.umjammer</groupId>
-      <artifactId>vavi-apps-fuse</artifactId>
-      <version>0.0.9</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.jackrabbit</groupId>
-          <artifactId>jackrabbit-webdav</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>${vavi-apps-fuse.groupId}</groupId>
+      <artifactId>vavi-nio-file-googledrive</artifactId>
+      <version>${vavi-apps-fuse.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${vavi-apps-fuse.groupId}</groupId>
+      <artifactId>vavi-nio-file-onedrive4</artifactId>
+      <version>${vavi-apps-fuse.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${vavi-apps-fuse.groupId}</groupId>
+      <artifactId>vavi-nio-file-gathered</artifactId>
+      <version>${vavi-apps-fuse.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.umjammer.vavi-net-auth</groupId>
+      <artifactId>vavi-net-auth-common</artifactId>
+      <version>0.1.4</version>
     </dependency>
 
     <dependency>
       <!-- java-fs dropbox -->
       <groupId>com.github.umjammer</groupId>
       <artifactId>java7-fs-dropbox</artifactId>
-      <version>0.0.11v</version>
+      <version>0.0.18v</version>
     </dependency>
 
     <dependency>
       <!-- java-fs box -->
       <groupId>com.github.umjammer</groupId>
       <artifactId>java7-fs-box</artifactId>
-      <version>0.1.5v</version>
+      <version>0.1.13v</version>
     </dependency>
 
     <dependency>

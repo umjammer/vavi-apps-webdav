@@ -8,9 +8,9 @@ package vavi.net.webdav.auth;
 
 import java.io.IOException;
 
-import vavi.net.auth.oauth2.Authenticator;
-import vavi.net.auth.oauth2.BasicAppCredential;
-import vavi.net.auth.oauth2.UserCredential;
+import vavi.net.auth.AppCredential;
+import vavi.net.auth.Authenticator;
+import vavi.net.auth.UserCredential;
 
 
 /**
@@ -22,7 +22,7 @@ import vavi.net.auth.oauth2.UserCredential;
 public class WebAuthenticator implements Authenticator<UserCredential, Void> {
 
     /** */
-    public WebAuthenticator(BasicAppCredential appCredential) {
+    public WebAuthenticator(AppCredential appCredential) {
     }
 
     /**

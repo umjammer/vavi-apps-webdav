@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import vavi.net.auth.oauth2.BasicAppCredential;
+import vavi.net.auth.oauth2.OAuth2AppCredential;
 import vavi.net.webdav.StrageDao;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -21,7 +21,7 @@ import vavi.util.properties.annotation.PropsEntity;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2020/05/05 umjammer initial version <br>
  */
-public abstract class WebAppCredential implements BasicAppCredential {
+public abstract class WebAppCredential implements OAuth2AppCredential {
 
     /** bind automatically using {@link PropsEntity.Util#bind(Object, String...)} */
     protected WebAppCredential() {

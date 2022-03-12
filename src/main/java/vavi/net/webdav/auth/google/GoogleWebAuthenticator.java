@@ -15,9 +15,9 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 
-import vavi.net.auth.oauth2.Authenticator;
-import vavi.net.auth.oauth2.UserCredential;
-import vavi.net.auth.oauth2.google.GoogleAppCredential;
+import vavi.net.auth.Authenticator;
+import vavi.net.auth.UserCredential;
+import vavi.net.auth.oauth2.google.GoogleOAuth2AppCredential;
 import vavi.net.auth.oauth2.google.GoogleOAuth2;
 import vavi.net.webdav.auth.OAuthException;
 import vavi.net.webdav.auth.WebOAuth2;
@@ -51,10 +51,10 @@ public class GoogleWebAuthenticator implements Authenticator<Object, Credential>
     private String code, state;
 
     /** */
-    public GoogleWebAuthenticator(GoogleAppCredential appCredential) {
+    public GoogleWebAuthenticator(GoogleOAuth2AppCredential appCredential) {
         try {
-            flow = new GoogleAuthorizationCodeFlow.Builder(GoogleOAuth2.HTTP_TRANSPORT,
-                                                           GoogleOAuth2.JSON_FACTORY,
+            flow = new GoogleAuthorizationCodeFlow.Builder(GoogleOAuth2.getHttpTransport(),
+                                                           GoogleOAuth2.getJsonFactory(),
                                                            appCredential.getRawData(),
                                                            Arrays.asList(appCredential.getScope()))
                     .setDataStoreFactory(appCredential.getDataStoreFactory())
