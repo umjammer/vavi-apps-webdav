@@ -35,6 +35,11 @@ access https://your-heroku-app.herokuapp.com/webdav using webdav client
 https basic authentication: enter user/${WEBDAV_USER_PASSWORD}
 
 
+## Competitor
+
+ * https://github.com/a-langer/webdav-vfs-gate
+
+
 ----
 <sub>
 <a href="https://icons8.com/icon/44790/cloud-storage">Cloud Storage icon by Icons8</a>
