@@ -33,5 +33,3 @@ public class WebAuthenticator implements Authenticator<UserCredential, Void> {
         throw new OAuthException(userCredential.getId());
     }
 }
-
-/* */

@@ -51,5 +51,3 @@ public class DaoDataStoreFactory extends AbstractDataStoreFactory {
         return (DataStore<V>) new DaoDataStore(this, dao, id);
     }
 }
-
-/* */

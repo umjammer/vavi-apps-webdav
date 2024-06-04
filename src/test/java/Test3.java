@@ -158,5 +158,3 @@ System.err.println("DB: { id: " + rs.getString("id") + ", credentials: " + rs.ge
         }
     }
 }
-
-/* */

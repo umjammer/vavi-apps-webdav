@@ -131,5 +131,3 @@ Debug.println("refreshToken: " + (credential.getRefreshToken() != null) + ", exp
         this.code = code;
     }
 }
-
-/* */

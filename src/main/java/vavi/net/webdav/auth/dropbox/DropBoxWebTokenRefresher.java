@@ -70,5 +70,3 @@ Debug.println("refreshToken: exists: " + authInfo.getRefreshToken());
     public void start(DbxAuthInfo refreshToken, long refreshDelay) throws IOException {
     }
 }
-
-/* */

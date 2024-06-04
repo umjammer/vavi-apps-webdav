@@ -22,5 +22,3 @@ public class OAuthException extends RuntimeException {
         super(email);
     }
 }
-
-/* */

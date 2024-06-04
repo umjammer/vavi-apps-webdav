@@ -67,5 +67,3 @@ public class BoxWebAppCredential extends WebAppCredential {
         return null;
     }
 }
-
-/* */

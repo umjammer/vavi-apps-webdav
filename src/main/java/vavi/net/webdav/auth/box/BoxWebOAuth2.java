@@ -76,5 +76,3 @@ LOG.debug("save [" + appCredential.getScheme() + ":" + id + "]: " + save);
         this.code = code;
     }
 }
-
-/* */

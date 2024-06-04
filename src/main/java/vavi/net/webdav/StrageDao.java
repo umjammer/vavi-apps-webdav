@@ -35,5 +35,3 @@ public interface StrageDao {
     /** */
     Map<String, String> selectAll();
 }
-
-/* */

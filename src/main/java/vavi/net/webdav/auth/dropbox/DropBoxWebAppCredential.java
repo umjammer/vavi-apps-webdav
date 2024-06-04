@@ -69,5 +69,3 @@ public class DropBoxWebAppCredential extends WebAppCredential {
         return null;
     }
 }
-
-/* */

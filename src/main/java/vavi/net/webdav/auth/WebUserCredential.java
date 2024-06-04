@@ -38,5 +38,3 @@ public class WebUserCredential implements WithTotpUserCredential {
         return null;
     }
 }
-
-/* */

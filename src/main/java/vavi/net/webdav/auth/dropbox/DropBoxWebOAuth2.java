@@ -104,5 +104,3 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
         redirectUri = appCredential.getRedirectUrl() + "?code=" + code + "&state=" + state;
     }
 }
-
-/* */

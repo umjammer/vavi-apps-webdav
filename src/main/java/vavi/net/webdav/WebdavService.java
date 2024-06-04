@@ -196,5 +196,3 @@ LOG.debug("auth done: " + id);
         }
     }
 }
-
-/* */

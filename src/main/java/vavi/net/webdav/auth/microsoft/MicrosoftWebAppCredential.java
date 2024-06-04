@@ -72,5 +72,3 @@ Debug.println(redirectUrl);
         return "Files.ReadWrite.All Sites.ReadWrite.All User.Read offline_access";
     }
 }
-
-/* */

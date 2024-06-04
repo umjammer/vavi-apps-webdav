@@ -56,5 +56,3 @@ System.err.println(appCredential);
         app.test();
     }
 }
-
-/* */

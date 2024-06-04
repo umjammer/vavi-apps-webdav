@@ -77,5 +77,3 @@ public class GoogleWebAppCredential extends GoogleBaseOAuth2AppCredential {
         return APPLICATION_NAME;
     }
 }
-
-/* */

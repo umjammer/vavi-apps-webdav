@@ -28,5 +28,3 @@ public interface WebOAuth2<I, O> extends OAuth2<I, O> {
     /** TODO */
     void setResult(String code, String state);
 }
-
-/* */

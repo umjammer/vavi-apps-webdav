@@ -41,5 +41,3 @@ public abstract class WebAppCredential implements OAuth2AppCredential {
         return strageDao;
     }
 }
-
-/* */

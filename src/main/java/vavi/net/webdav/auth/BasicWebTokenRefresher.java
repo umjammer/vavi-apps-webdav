@@ -56,5 +56,3 @@ LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
         strageDao.update(schemeId, null);
     }
 }
-
-/* */
