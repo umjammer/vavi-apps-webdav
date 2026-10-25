@@ -7,10 +7,9 @@
 package vavi.net.webdav.auth;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import vavi.net.auth.AppCredential;
 import vavi.net.auth.oauth2.BaseTokenRefresher;
@@ -25,29 +24,29 @@ import vavi.net.webdav.StrageDao;
  */
 public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BasicWebTokenRefresher.class);
+    private static final Logger logger = System.getLogger(BasicWebTokenRefresher.class.getName());
 
-    private String schemeId;
+    private final String schemeId;
 
-    private StrageDao strageDao;
+    private final StrageDao strageDao;
 
     /** */
     public BasicWebTokenRefresher(AppCredential appCredential, String id, Supplier<Long> refresh) {
         super(refresh);
         this.schemeId = appCredential.getScheme() + ":" + id;
-        this.strageDao = WebAppCredential.class.cast(appCredential).getStrageDao();
+        this.strageDao = ((WebAppCredential) appCredential).getStrageDao();
     }
 
     @Override
     public void writeRefreshToken(String refreshToken) throws IOException {
-LOG.debug("save refreshToken [" + schemeId + "]: " + refreshToken);
+logger.log(Level.DEBUG, "save refreshToken [" + schemeId + "]: " + refreshToken);
         strageDao.update(schemeId, refreshToken);
     }
 
     @Override
     public String readRefreshToken() throws IOException {
         String refreshToken = strageDao.select(schemeId);
-LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
+logger.log(Level.DEBUG, "load refreshToken [" + schemeId + "]: " + refreshToken);
         return refreshToken;
     }
 

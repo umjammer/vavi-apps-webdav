@@ -17,7 +17,7 @@ import vavi.net.auth.WithTotpUserCredential;
  */
 public class WebUserCredential implements WithTotpUserCredential {
 
-    private String id;
+    private final String id;
 
     public WebUserCredential(String id) {
         this.id = id;

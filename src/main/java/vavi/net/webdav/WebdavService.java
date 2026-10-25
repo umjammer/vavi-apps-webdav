@@ -7,6 +7,8 @@
 package vavi.net.webdav;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -16,8 +18,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import vavi.net.http.HttpUtil;
@@ -35,16 +35,16 @@ import vavi.nio.file.gathered.NameMap;
  */
 public class WebdavService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebdavService.class);
+    private static final Logger logger = System.getLogger(WebdavService.class.getName());
 
     @Autowired
     private StrageDao dao;
 
     /** <id, FileSystem> */
-    private Map<String, FileSystem> fileSystems = new HashMap<>();
+    private final Map<String, FileSystem> fileSystems = new HashMap<>();
 
     /** <id, String> */
-    private NameMap nameMap = new NameMap();
+    private final NameMap nameMap = new NameMap();
 
     /** */
     private FileSystem registerFileSystem(String id) throws IOException {
@@ -69,16 +69,16 @@ public class WebdavService {
 
         dao.load().forEach(id -> {
             try {
-LOG.debug("ADD: " + id + "    ---------------------------------------------------");
+logger.log(Level.DEBUG, "ADD: " + id + "    ---------------------------------------------------");
                 if (!fileSystems.containsKey(id)) {
                     registerFileSystem(id);
                 }
             } catch (OAuthException e) {
-LOG.info("NOT LOGINED: " + id + ": " + e.getMessage());
+logger.log(Level.INFO, "NOT LOGINED: " + id + ": " + e.getMessage());
                 errors.put(id, e);
                 deregisterFileSystem(id);
             } catch (Exception e) {
-LOG.warn(id, e);
+logger.log(Level.WARNING, id, e);
                 deregisterFileSystem(id);
             }
         });
@@ -168,9 +168,9 @@ System.err.println(id);
             String idForScheme = parts[1];
             WebOAuth2<?, ?> oauth2 = MyBeanFactory.getWebOAuth2(scheme);
             URI uri = oauth2.getAuthorizationUrl();
-LOG.debug("authorizationUrl: " + uri);
+logger.log(Level.DEBUG, "authorizationUrl: " + uri);
             String state = HttpUtil.splitQuery(uri).get("state")[0];
-LOG.debug("state: " + state + ", id: " + idForScheme);
+logger.log(Level.DEBUG, "state: " + state + ", id: " + idForScheme);
             sessionOAuth2s.put(state, oauth2);
             sessionIds.put(state, idForScheme);
             return uri.toString();
@@ -183,14 +183,14 @@ LOG.debug("state: " + state + ", id: " + idForScheme);
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void auth(String code, String state) {
         try {
-LOG.debug("state: " + state + ", code: " + code);
+logger.log(Level.DEBUG, "state: " + state + ", code: " + code);
             WebOAuth2 oauth2 = sessionOAuth2s.get(state);
             String id = sessionIds.get(state);
             oauth2.setResult(code, state);
             oauth2.authorize(id);
             sessionOAuth2s.remove(state);
             sessionIds.remove(state);
-LOG.debug("auth done: " + id);
+logger.log(Level.DEBUG, "auth done: " + id);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

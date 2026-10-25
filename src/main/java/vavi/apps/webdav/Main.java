@@ -16,10 +16,9 @@
 
 package vavi.apps.webdav;
 
+import java.lang.System.Logger;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -43,7 +42,7 @@ import vavi.net.webdav.WebdavService;
 @Controller
 public class Main {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = System.getLogger(Main.class.getName());
 
     /** @see SpringBootApplication */
     public static void main(String[] args) throws Exception {
@@ -70,7 +69,7 @@ public class Main {
     @GetMapping("/login")
     String login(RedirectAttributes redirectAttributes,
                  @RequestParam(name = "id", required = true) String id) {
-LOG.debug("id: " + id);
+logger.log(Level.DEBUG, "id: " + id);
         String url = service.login(id);
         return "redirect:" + url;
     }

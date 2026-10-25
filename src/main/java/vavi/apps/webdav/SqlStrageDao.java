@@ -6,6 +6,8 @@
 
 package vavi.apps.webdav;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,8 +20,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import vavi.net.webdav.StrageDao;
@@ -33,7 +33,7 @@ import vavi.net.webdav.StrageDao;
  */
 public class SqlStrageDao implements StrageDao {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SqlStrageDao.class);
+    private static final Logger logger = System.getLogger(SqlStrageDao.class.getName());
 
     @Autowired
     private DataSource dataSource;
@@ -72,7 +72,7 @@ public class SqlStrageDao implements StrageDao {
             pstmt.setString(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-LOG.debug("[" + id + "]: " + rs.getString("token"));
+logger.log(Level.DEBUG, "[" + id + "]: " + rs.getString("token"));
                 return rs.getString("token");
             } else {
                 return null;
@@ -91,7 +91,7 @@ LOG.debug("[" + id + "]: " + rs.getString("token"));
             if (rs.next()) {
                 String id = rs.getString("id");
                 String token = rs.getString("token");
-LOG.debug("[" + id + "]: " + token);
+logger.log(Level.DEBUG, "[" + id + "]: " + token);
                 result.put(id, token);
             }
             return result;

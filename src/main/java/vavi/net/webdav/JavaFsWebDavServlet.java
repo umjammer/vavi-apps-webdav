@@ -2,22 +2,22 @@
 package vavi.net.webdav;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Path;
 
 import jakarta.servlet.ServletException;
 
 import org.cryptomator.webdav.core.servlet.AbstractNioWebDavServlet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class JavaFsWebDavServlet extends AbstractNioWebDavServlet {
 
     public static final String REALM = DEFAULT_AUTHENTICATE_HEADER.split("\"")[1];
 
-    private static final Logger LOG = LoggerFactory.getLogger(JavaFsWebDavServlet.class);
+    private static final Logger logger = System.getLogger(JavaFsWebDavServlet.class.getName());
 
-    private WebdavService service;
+    private final WebdavService service;
 
     public JavaFsWebDavServlet(WebdavService service) {
         this.service = service;
@@ -39,7 +39,7 @@ public class JavaFsWebDavServlet extends AbstractNioWebDavServlet {
      */
     @Override
     protected Path resolveUrl(String relativeUrl) throws IllegalArgumentException {
-LOG.debug("relativeUrl: " + relativeUrl);
+logger.log(Level.DEBUG, "relativeUrl: " + relativeUrl);
         try {
             return service.resolve(relativeUrl);
         } catch (IOException e) {

@@ -39,13 +39,13 @@ public class GoogleWebAuthenticator implements Authenticator<Object, Credential>
     private static final Logger logger = System.getLogger(GoogleWebAuthenticator.class.getName());
 
     /** */
-    private GoogleAuthorizationCodeFlow flow;
+    private final GoogleAuthorizationCodeFlow flow;
 
     /** */
-    private String redirectUrl;
+    private final String redirectUrl;
 
     /** */
-    private String url;
+    private final String url;
 
     /** */
     private String code, state;

@@ -41,12 +41,12 @@ System.err.println(appCredential);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new StringReader(appCredential));
         System.err.println(clientSecrets.getDetails().getClientId());
         System.err.println(clientSecrets.getDetails().getAuthUri());
-        System.err.println(clientSecrets.getDetails().getRedirectUris().stream().filter(s -> String.class.cast(s).startsWith("https://")).findFirst().get());
+        System.err.println(clientSecrets.getDetails().getRedirectUris().stream().filter(s -> ((String) s).startsWith("https://")).findFirst().get());
         System.err.println(clientSecrets.getDetails().getClientSecret());
 
         System.err.println(clientSecrets.getWeb().getClientId());
         System.err.println(clientSecrets.getWeb().getAuthUri());
-        System.err.println(clientSecrets.getWeb().getRedirectUris().stream().filter(s -> String.class.cast(s).startsWith("https://")).findFirst().get());
+        System.err.println(clientSecrets.getWeb().getRedirectUris().stream().filter(s -> ((String) s).startsWith("https://")).findFirst().get());
         System.err.println(clientSecrets.getWeb().getClientSecret());
     }
 

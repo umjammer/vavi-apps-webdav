@@ -7,15 +7,14 @@
 package org.cryptomator.webdav.core.filters;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -26,7 +25,8 @@ import org.slf4j.LoggerFactory;
  */
 public class WebdavForBrowserFilter implements HttpFilter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebdavForBrowserFilter.class);
+    private static final Logger logger = System.getLogger(WebdavForBrowserFilter.class.getName());
+
     private static final String METHOD_GET = "GET";
     private static final String METHOD_PROPFIND = "PROPFIND";
     private static final String USER_AGENT = "user-agent";
@@ -35,10 +35,10 @@ public class WebdavForBrowserFilter implements HttpFilter {
     public void doFilterHttp(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         String ua = request.getHeader(USER_AGENT);
-LOG.debug(USER_AGENT + ": " + ua);
+logger.log(Level.DEBUG, USER_AGENT + ": " + ua);
         boolean isBrowser = ua.contains("Mozilla");
         if (METHOD_GET.equalsIgnoreCase(request.getMethod()) && isBrowser) {
-LOG.debug("client is browser: " + ua);
+logger.log(Level.DEBUG, "client is browser: " + ua);
             request = new HttpServletRequestWrapper(request) {
                 public String getMethod() {
                     return METHOD_PROPFIND;

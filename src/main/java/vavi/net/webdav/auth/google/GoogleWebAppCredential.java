@@ -49,7 +49,7 @@ public class GoogleWebAppCredential extends GoogleBaseOAuth2AppCredential {
 
     @Override
     protected Predicate<? super String> getFilter() {
-        return s -> ((String) s).startsWith("https://");
+        return s -> s.startsWith("https://");
     }
 
     @Override
