@@ -4,7 +4,7 @@ package vavi.net.webdav;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.cryptomator.webdav.core.servlet.AbstractNioWebDavServlet;
 import org.slf4j.Logger;

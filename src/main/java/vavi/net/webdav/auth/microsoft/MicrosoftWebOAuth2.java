@@ -7,6 +7,8 @@
 package vavi.net.webdav.auth.microsoft;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 
 import org.dmfs.httpessentials.client.HttpRequestExecutor;
@@ -41,14 +43,16 @@ import vavi.util.Debug;
  */
 public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
 
+    private static final Logger logger = System.getLogger(MicrosoftWebOAuth2.class.getName());
+
     /** http client for oauth */
-    private static HttpRequestExecutor oauthExecutor = new HttpUrlConnectionExecutor();
+    private static final HttpRequestExecutor oauthExecutor = new HttpUrlConnectionExecutor();
 
     /** */
-    private OAuth2InteractiveGrant grant;
+    private final OAuth2InteractiveGrant grant;
 
     /** */
-    private WebAppCredential appCredential;
+    private final WebAppCredential appCredential;
 
     /** */
     public MicrosoftWebOAuth2(WebAppCredential appCredential) {
@@ -94,9 +98,9 @@ public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
             BasicWebTokenRefresher refresher = new BasicWebTokenRefresher(appCredential, id, null);
 
             String redirectUrl = appCredential.getRedirectUrl() + "?code=" + code + "&state=" + state;
-Debug.println("redirectUrl: " + redirectUrl);
+logger.log(Level.DEBUG, "redirectUrl: " + redirectUrl);
             OAuth2AccessToken token = grant.withRedirect(new LazyUri(new Precoded(redirectUrl))).accessToken(oauthExecutor);
-Debug.println("scope: " + token.scope());
+logger.log(Level.DEBUG, "scope: " + token.scope());
             refresher.writeRefreshToken(token.refreshToken().toString());
 
             return token.accessToken().toString();

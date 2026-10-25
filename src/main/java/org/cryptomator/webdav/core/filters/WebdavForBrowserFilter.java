@@ -8,11 +8,11 @@ package org.cryptomator.webdav.core.filters;
 
 import java.io.IOException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class WebdavForBrowserFilter implements HttpFilter {
             throws IOException, ServletException {
         String ua = request.getHeader(USER_AGENT);
 LOG.debug(USER_AGENT + ": " + ua);
-        boolean isBrowser = ua.indexOf("Mozilla") >= 0;
+        boolean isBrowser = ua.contains("Mozilla");
         if (METHOD_GET.equalsIgnoreCase(request.getMethod()) && isBrowser) {
 LOG.debug("client is browser: " + ua);
             request = new HttpServletRequestWrapper(request) {
