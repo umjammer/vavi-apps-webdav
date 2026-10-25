@@ -43,6 +43,7 @@ import vavi.net.webdav.WebdavService;
 import vavi.net.webdav.auth.WebOAuth2;
 import vavi.net.webdav.auth.WebUserCredential;
 import vavi.net.webdav.auth.box.BoxWebAppCredential;
+import vavi.net.webdav.auth.box.BoxWebFsOAuth2;
 import vavi.net.webdav.auth.box.BoxWebOAuth2;
 import vavi.net.webdav.auth.dropbox.DropBoxWebAppCredential;
 import vavi.net.webdav.auth.dropbox.DropBoxWebOAuth2;
@@ -210,6 +211,7 @@ public class Config {
             env.put("ignoreAppleDouble", true);
             break;
         case "box":
+            System.setProperty(BoxWebFsOAuth2.PROPERTY_OAUTH2, BoxWebFsOAuth2.class.getName());
             env.put(BoxFileSystemProvider.ENV_APP_CREDENTIAL, boxAppCredential);
             env.put(BoxFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
             env.put("ignoreAppleDouble", true);
