@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URI;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
@@ -117,15 +119,19 @@ logger.log(Level.DEBUG, "refreshToken: " + (credential.getRefreshToken() != null
         return credential;
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Override
     public URI getAuthorizationUrl() {
-        state = StringUtil.getRandomString();
+        byte[] randomBytes = new byte[24];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        state = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
         return URI.create(url + "&state=" + state);
     }
 
     @Override
     public void setResult(String code, String state) {
-        if (!this.state.equals(state)) {
+        if (this.state == null || !this.state.equals(state)) {
             throw new SecurityException("state is not same");
         }
         this.code = code;

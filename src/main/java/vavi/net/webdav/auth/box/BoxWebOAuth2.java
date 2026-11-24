@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URI;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import com.box.sdkgen.box.errors.BoxSDKError;
 import com.box.sdkgen.box.oauth.BoxOAuth;
@@ -61,9 +63,13 @@ logger.log(Level.DEBUG, "authorized [" + appCredential.getScheme() + ":" + id + 
         return new BoxClient(auth);
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     /** Get the authorization URL and open it in a WebView */
     public URI getAuthorizationUrl() {
-        state = StringUtil.getRandomString();
+        byte[] randomBytes = new byte[24];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        state = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
         OAuthConfig config = new OAuthConfig.Builder(appCredential.getClientId(), appCredential.getClientSecret())
                 .build();
         GetAuthorizeUrlOptions options = new GetAuthorizeUrlOptions.Builder()
@@ -79,7 +85,7 @@ logger.log(Level.DEBUG, "authorized [" + appCredential.getScheme() + ":" + id + 
 
     /** */
     public void setResult(String code, String state) {
-        if (!this.state.equals(state)) {
+        if (this.state == null || !this.state.equals(state)) {
             throw new SecurityException("state is not same");
         }
         this.code = code;

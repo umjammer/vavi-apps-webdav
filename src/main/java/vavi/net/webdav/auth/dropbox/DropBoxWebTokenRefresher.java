@@ -45,7 +45,7 @@ public class DropBoxWebTokenRefresher implements TokenRefresher<DbxAuthInfo> {
 
     @Override
     public void writeRefreshToken(DbxAuthInfo authInfo) throws IOException {
-logger.log(Level.DEBUG, "refreshToken: " + authInfo.getRefreshToken());
+logger.log(Level.DEBUG, "refreshToken: " + (authInfo.getRefreshToken() != null));
         String json = DbxAuthInfo.Writer.writeToString(authInfo, true);
         strageDao.update(schemeId, json);
     }
@@ -58,7 +58,7 @@ logger.log(Level.DEBUG, "refreshToken: " + authInfo.getRefreshToken());
                 return null;
             }
             DbxAuthInfo authInfo = DbxAuthInfo.Reader.readFully(json);
-logger.log(Level.DEBUG, "refreshToken: exists: " + authInfo.getRefreshToken());
+logger.log(Level.DEBUG, "refreshToken: exists: " + (authInfo.getRefreshToken() != null));
             return authInfo;
         } catch (JsonReadException e) {
             throw new IOException(e);

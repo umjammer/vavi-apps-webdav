@@ -39,14 +39,14 @@ public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
 
     @Override
     public void writeRefreshToken(String refreshToken) throws IOException {
-logger.log(Level.DEBUG, "save refreshToken [" + schemeId + "]: " + refreshToken);
+logger.log(Level.DEBUG, "save refreshToken [" + schemeId + "]: " + (refreshToken != null));
         strageDao.update(schemeId, refreshToken);
     }
 
     @Override
     public String readRefreshToken() throws IOException {
         String refreshToken = strageDao.select(schemeId);
-logger.log(Level.DEBUG, "load refreshToken [" + schemeId + "]: " + refreshToken);
+logger.log(Level.DEBUG, "load refreshToken [" + schemeId + "]: " + (refreshToken != null));
         return refreshToken;
     }
 

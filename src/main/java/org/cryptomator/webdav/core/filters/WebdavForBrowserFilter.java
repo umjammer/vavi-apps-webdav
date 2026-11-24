@@ -36,7 +36,7 @@ public class WebdavForBrowserFilter implements HttpFilter {
             throws IOException, ServletException {
         String ua = request.getHeader(USER_AGENT);
 logger.log(Level.DEBUG, USER_AGENT + ": " + ua);
-        boolean isBrowser = ua.contains("Mozilla");
+        boolean isBrowser = ua != null && ua.contains("Mozilla");
         if (METHOD_GET.equalsIgnoreCase(request.getMethod()) && isBrowser) {
 logger.log(Level.DEBUG, "client is browser: " + ua);
             request = new HttpServletRequestWrapper(request) {

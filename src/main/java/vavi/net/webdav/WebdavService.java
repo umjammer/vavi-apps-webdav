@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,7 +42,7 @@ public class WebdavService {
     private StrageDao dao;
 
     /** <id, FileSystem> */
-    private final Map<String, FileSystem> fileSystems = new HashMap<>();
+    private final Map<String, FileSystem> fileSystems = new ConcurrentHashMap<>();
 
     /** <id, String> */
     private final NameMap nameMap = new NameMap();
@@ -90,7 +91,7 @@ logger.log(Level.WARNING, id, e);
     public static final String URL_ROOT_PATH = "webdav";
 
     /** <scheme, Path> */
-    private Map<String, Path> rootPaths = new HashMap<>();
+    private Map<String, Path> rootPaths = new ConcurrentHashMap<>();
 
     /** */
     private Path gatheredFsRoot;
@@ -120,12 +121,15 @@ logger.log(Level.WARNING, id, e);
         }
 
         String id = nameMap.decodeFsName(parts[1]);
-System.err.println(id);
+logger.log(Level.DEBUG, id);
+        if (id == null || !fileSystems.containsKey(id)) {
+            throw new IllegalArgumentException("unknown storage: " + parts[1]);
+        }
         String path = String.join("/", Arrays.copyOfRange(parts, 2, parts.length));
 
         Path rootPath;
-        if (rootPaths.containsKey(parts[1])) {
-            rootPath = rootPaths.get(parts[1]);
+        if (rootPaths.containsKey(id)) {
+            rootPath = rootPaths.get(id);
         } else {
             FileSystem fs;
             if (fileSystems.containsKey(id)) {
@@ -153,17 +157,20 @@ System.err.println(id);
     }
 
     /** <state, WebOAuth2> */
-    private Map<String, WebOAuth2<?, ?>> sessionOAuth2s = new HashMap<>();
+    private Map<String, WebOAuth2<?, ?>> sessionOAuth2s = new ConcurrentHashMap<>();
 
     /** <state, idForScheme> */
-    private Map<String, String> sessionIds = new HashMap<>();
+    private Map<String, String> sessionIds = new ConcurrentHashMap<>();
 
     /**
      * @param id "scheme:your@id.com"
      */
     public String login(String id) {
         try {
-            String[] parts = id.split(":");
+            String[] parts = id.split(":", 2);
+            if (parts.length < 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                throw new IllegalArgumentException("invalid id format");
+            }
             String scheme = parts[0];
             String idForScheme = parts[1];
             WebOAuth2<?, ?> oauth2 = MyBeanFactory.getWebOAuth2(scheme);
@@ -183,13 +190,17 @@ logger.log(Level.DEBUG, "state: " + state + ", id: " + idForScheme);
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void auth(String code, String state) {
         try {
-logger.log(Level.DEBUG, "state: " + state + ", code: " + code);
-            WebOAuth2 oauth2 = sessionOAuth2s.get(state);
-            String id = sessionIds.get(state);
+            if (state == null || code == null) {
+                throw new SecurityException("missing state or code");
+            }
+logger.log(Level.DEBUG, "state: " + state + ", code: " + (code != null));
+            WebOAuth2 oauth2 = sessionOAuth2s.remove(state);
+            String id = sessionIds.remove(state);
+            if (oauth2 == null || id == null) {
+                throw new SecurityException("invalid or expired state");
+            }
             oauth2.setResult(code, state);
             oauth2.authorize(id);
-            sessionOAuth2s.remove(state);
-            sessionIds.remove(state);
 logger.log(Level.DEBUG, "auth done: " + id);
         } catch (IOException e) {
             throw new IllegalStateException(e);

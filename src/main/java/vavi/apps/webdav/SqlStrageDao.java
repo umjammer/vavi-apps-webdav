@@ -40,9 +40,9 @@ public class SqlStrageDao implements StrageDao {
 
     @Override
     public List<String> load() {
-        try (Connection connection = dataSource.getConnection()) {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id FROM credential");
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id FROM credential")) {
             List<String> output = new ArrayList<>();
             while (rs.next()) {
                 output.add(rs.getString("id"));
@@ -55,8 +55,8 @@ public class SqlStrageDao implements StrageDao {
 
     @Override
     public void update(String id, String token) {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement pstmt = connection.prepareStatement("UPDATE credential SET token = ? WHERE id = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement("UPDATE credential SET token = ? WHERE id = ?")) {
             pstmt.setString(1, token);
             pstmt.setString(2, id);
             pstmt.execute();
@@ -67,15 +67,17 @@ public class SqlStrageDao implements StrageDao {
 
     @Override
     public String select(String id) {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement pstmt = connection.prepareStatement("SELECT token FROM credential WHERE id = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement("SELECT token FROM credential WHERE id = ?")) {
             pstmt.setString(1, id);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-logger.log(Level.DEBUG, "[" + id + "]: " + rs.getString("token"));
-                return rs.getString("token");
-            } else {
-                return null;
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String token = rs.getString("token");
+logger.log(Level.DEBUG, "[" + id + "]: " + (token != null));
+                    return token;
+                } else {
+                    return null;
+                }
             }
         } catch (SQLException e) {
             throw new IllegalStateException(e);
@@ -84,14 +86,14 @@ logger.log(Level.DEBUG, "[" + id + "]: " + rs.getString("token"));
 
     @Override
     public Map<String, String> selectAll() {
-        try (Connection connection = dataSource.getConnection()) {
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id, token FROM credential")) {
             Map<String, String> result = new HashMap<>();
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, token FROM credential");
-            if (rs.next()) {
+            while (rs.next()) {
                 String id = rs.getString("id");
                 String token = rs.getString("token");
-logger.log(Level.DEBUG, "[" + id + "]: " + token);
+logger.log(Level.DEBUG, "[" + id + "]: " + (token != null));
                 result.put(id, token);
             }
             return result;
@@ -102,8 +104,8 @@ logger.log(Level.DEBUG, "[" + id + "]: " + token);
 
     @Override
     public boolean delete(String id) {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement pstmt = connection.prepareStatement("DELETE FROM credential WHERE id = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement("DELETE FROM credential WHERE id = ?")) {
             pstmt.setString(1, id);
             return pstmt.execute();
         } catch (SQLException e) {
@@ -113,8 +115,8 @@ logger.log(Level.DEBUG, "[" + id + "]: " + token);
 
     @Override
     public boolean deleteAll() {
-        try (Connection connection = dataSource.getConnection()) {
-            Statement stmt = connection.createStatement();
+        try (Connection connection = dataSource.getConnection();
+             Statement stmt = connection.createStatement()) {
             return stmt.execute("DELETE FROM credential");
         } catch (SQLException e) {
             throw new IllegalStateException(e);

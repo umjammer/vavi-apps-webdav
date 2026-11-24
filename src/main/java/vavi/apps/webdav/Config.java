@@ -12,6 +12,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -71,6 +72,12 @@ public class Config {
     @Value("${spring.datasource.url}")
     private String dbUrl;
 
+    @Value("${spring.datasource.username:}")
+    private String dbUsername;
+
+    @Value("${spring.datasource.password:}")
+    private String dbPassword;
+
     @Bean
     public DataSource dataSource() throws SQLException {
         if (dbUrl == null || dbUrl.isEmpty()) {
@@ -78,6 +85,12 @@ public class Config {
         } else {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(dbUrl);
+            if (dbUsername != null && !dbUsername.isEmpty()) {
+                config.setUsername(dbUsername);
+            }
+            if (dbPassword != null && !dbPassword.isEmpty()) {
+                config.setPassword(dbPassword);
+            }
             return new HikariDataSource(config);
         }
     }
@@ -119,7 +132,10 @@ public class Config {
         // https://stackoverflow.com/questions/53300497/encoded-precent25-with-spring-requestmapping-path-param-gives-http-400
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedPercent(true);
-        firewall.setUnsafeAllowAnyHttpMethod(true);
+        firewall.setAllowedHttpMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS",
+                "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK"
+        ));
         return firewall;
     }
 

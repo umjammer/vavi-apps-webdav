@@ -52,7 +52,7 @@ logger.log(Level.DEBUG, clientId);
 
     @Override
     public String getClientSecret() {
-logger.log(Level.DEBUG, clientSecret);
+logger.log(Level.DEBUG, "clientSecret: " + (clientSecret != null));
         return clientSecret;
     }
 

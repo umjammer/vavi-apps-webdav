@@ -8,6 +8,8 @@ package vavi.net.webdav.auth.dropbox;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import jakarta.servlet.http.HttpSession;
@@ -101,6 +103,8 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
 
     @Override
     public void setResult(String code, String state) {
-        redirectUri = appCredential.getRedirectUrl() + "?code=" + code + "&state=" + state;
+        String encodedCode = URLEncoder.encode(code, StandardCharsets.UTF_8);
+        String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+        redirectUri = appCredential.getRedirectUrl() + "?code=" + encodedCode + "&state=" + encodedState;
     }
 }
