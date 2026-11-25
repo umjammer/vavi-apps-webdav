@@ -7,13 +7,17 @@
 package vavi.net.webdav.auth.box;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
-import java.util.Arrays;
+import java.security.SecureRandom;
+import java.util.Base64;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.box.sdk.BoxAPIConnection;
+import com.box.sdkgen.box.errors.BoxSDKError;
+import com.box.sdkgen.box.oauth.BoxOAuth;
+import com.box.sdkgen.box.oauth.GetAuthorizeUrlOptions;
+import com.box.sdkgen.box.oauth.OAuthConfig;
+import com.box.sdkgen.client.BoxClient;
 
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.net.webdav.auth.WebOAuth2;
@@ -22,47 +26,58 @@ import vavi.util.StringUtil;
 
 /**
  * BoxWebOAuth2.
- *
- * DropDBbox API doesn't have a refresh token system.
+ * <p>
+ * the web login flow for box. obtained tokens are stored by {@link BoxDaoTokenStorage}.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/07/04 umjammer initial version <br>
  */
-public class BoxWebOAuth2 implements WebOAuth2<String, BoxAPIConnection> {
+public class BoxWebOAuth2 implements WebOAuth2<String, BoxClient> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BoxWebOAuth2.class);
-
-    /** */
-    private WebAppCredential appCredential;
+    private static final Logger logger = System.getLogger(BoxWebOAuth2.class.getName());
 
     /** */
-    private BoxAPIConnection api;
+    private final WebAppCredential appCredential;
 
     /** */
     public BoxWebOAuth2(WebAppCredential appCredential) {
         this.appCredential = appCredential;
-        this.api = new BoxAPIConnection(appCredential.getClientId(), appCredential.getClientSecret());
-        api.setExpires(60 * 24 * 60 * 60 * 1000);
     }
 
-    /** */
-    public BoxAPIConnection authorize(String id) throws IOException {
-        api.authenticate(code);
-        api.setAutoRefresh(true);
+    /**
+     * exchanges the authorization code to tokens and stores them.
+     * @param id id for scheme
+     */
+    public BoxClient authorize(String id) throws IOException {
+        OAuthConfig config = new OAuthConfig.Builder(appCredential.getClientId(), appCredential.getClientSecret())
+                .tokenStorage(new BoxDaoTokenStorage(appCredential, id))
+                .build();
+        BoxOAuth auth = new BoxOAuth(config);
+        try {
+            auth.getTokensAuthorizationCodeGrant(code);
+        } catch (BoxSDKError e) {
+            throw new IOException(e);
+        }
+logger.log(Level.DEBUG, "authorized [" + appCredential.getScheme() + ":" + id + "]");
 
-        String save = api.save();
-LOG.debug("save [" + appCredential.getScheme() + ":" + id + "]: " + save);
-        appCredential.getStrageDao().update(appCredential.getScheme() + ":" + id, save);
-
-        return api;
+        return new BoxClient(auth);
     }
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /** Get the authorization URL and open it in a WebView */
     public URI getAuthorizationUrl() {
-        state = StringUtil.getRandomString();
-        return URI.create(BoxAPIConnection.getAuthorizationURL(appCredential.getClientId(),
-                URI.create(appCredential.getRedirectUrl()), state, Arrays.asList("root_readwrite"))
-                .toString());
+        byte[] randomBytes = new byte[24];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        state = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+        OAuthConfig config = new OAuthConfig.Builder(appCredential.getClientId(), appCredential.getClientSecret())
+                .build();
+        GetAuthorizeUrlOptions options = new GetAuthorizeUrlOptions.Builder()
+                .redirectUri(appCredential.getRedirectUrl())
+                .state(state)
+                .scope("root_readwrite")
+                .build();
+        return URI.create(new BoxOAuth(config).getAuthorizeUrl(options));
     }
 
     /** */
@@ -70,11 +85,9 @@ LOG.debug("save [" + appCredential.getScheme() + ":" + id + "]: " + save);
 
     /** */
     public void setResult(String code, String state) {
-        if (!this.state.equals(state)) {
+        if (this.state == null || !this.state.equals(state)) {
             throw new SecurityException("state is not same");
         }
         this.code = code;
     }
 }
-
-/* */

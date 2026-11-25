@@ -7,7 +7,11 @@
 package vavi.net.webdav.auth.microsoft;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.dmfs.httpessentials.client.HttpRequestExecutor;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
@@ -27,6 +31,7 @@ import org.dmfs.rfc3986.encoding.Precoded;
 import org.dmfs.rfc3986.uris.LazyUri;
 import org.dmfs.rfc5545.Duration;
 
+import vavi.net.http.HttpUtil;
 import vavi.net.webdav.auth.BasicWebTokenRefresher;
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.net.webdav.auth.WebOAuth2;
@@ -41,14 +46,16 @@ import vavi.util.Debug;
  */
 public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
 
+    private static final Logger logger = System.getLogger(MicrosoftWebOAuth2.class.getName());
+
     /** http client for oauth */
-    private static HttpRequestExecutor oauthExecutor = new HttpUrlConnectionExecutor();
+    private static final HttpRequestExecutor oauthExecutor = new HttpUrlConnectionExecutor();
 
     /** */
-    private OAuth2InteractiveGrant grant;
+    private final OAuth2InteractiveGrant grant;
 
     /** */
-    private WebAppCredential appCredential;
+    private final WebAppCredential appCredential;
 
     /** */
     public MicrosoftWebOAuth2(WebAppCredential appCredential) {
@@ -75,7 +82,14 @@ public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
 
     /** Get the authorization URL and open it in a WebView */
     public URI getAuthorizationUrl() {
-        return grant.authorizationUrl();
+        URI uri = grant.authorizationUrl();
+        try {
+            String[] states = HttpUtil.splitQuery(uri).get("state");
+            this.state = (states != null && states.length > 0) ? states[0] : null;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return uri;
     }
 
     /** */
@@ -83,6 +97,9 @@ public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
 
     /** */
     public void setResult(String code, String state) {
+        if (this.state == null || !this.state.equals(state)) {
+            throw new SecurityException("state is not same");
+        }
         this.code = code;
         this.state = state;
     }
@@ -93,10 +110,12 @@ public class MicrosoftWebOAuth2 implements WebOAuth2<String, String> {
             // just use dao
             BasicWebTokenRefresher refresher = new BasicWebTokenRefresher(appCredential, id, null);
 
-            String redirectUrl = appCredential.getRedirectUrl() + "?code=" + code + "&state=" + state;
-Debug.println("redirectUrl: " + redirectUrl);
+            String encodedCode = URLEncoder.encode(code, StandardCharsets.UTF_8);
+            String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+            String redirectUrl = appCredential.getRedirectUrl() + "?code=" + encodedCode + "&state=" + encodedState;
+logger.log(Level.DEBUG, "redirectUrl: " + appCredential.getRedirectUrl());
             OAuth2AccessToken token = grant.withRedirect(new LazyUri(new Precoded(redirectUrl))).accessToken(oauthExecutor);
-Debug.println("scope: " + token.scope());
+logger.log(Level.DEBUG, "scope: " + token.scope());
             refresher.writeRefreshToken(token.refreshToken().toString());
 
             return token.accessToken().toString();
@@ -105,5 +124,3 @@ Debug.println("scope: " + token.scope());
         }
     }
 }
-
-/* */

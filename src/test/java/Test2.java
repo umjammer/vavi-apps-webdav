@@ -126,5 +126,3 @@ System.err.println("DB: { id: " + id + ", token: " + rs.getString("token") + " }
         }
     }
 }
-
-/* */

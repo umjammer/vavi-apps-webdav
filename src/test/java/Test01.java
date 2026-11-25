@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -28,7 +28,7 @@ import vavi.util.properties.annotation.PropsEntity;
 class Test01 {
 
     /** Global instance of the JSON factory. */
-    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    public static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     @Property(name = "GOOGLEDRIVE_CLIENT_SECRET")
     private transient String appCredential;
@@ -41,12 +41,12 @@ System.err.println(appCredential);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new StringReader(appCredential));
         System.err.println(clientSecrets.getDetails().getClientId());
         System.err.println(clientSecrets.getDetails().getAuthUri());
-        System.err.println(clientSecrets.getDetails().getRedirectUris().stream().filter(s -> String.class.cast(s).startsWith("https://")).findFirst().get());
+        System.err.println(clientSecrets.getDetails().getRedirectUris().stream().filter(s -> ((String) s).startsWith("https://")).findFirst().get());
         System.err.println(clientSecrets.getDetails().getClientSecret());
 
         System.err.println(clientSecrets.getWeb().getClientId());
         System.err.println(clientSecrets.getWeb().getAuthUri());
-        System.err.println(clientSecrets.getWeb().getRedirectUris().stream().filter(s -> String.class.cast(s).startsWith("https://")).findFirst().get());
+        System.err.println(clientSecrets.getWeb().getRedirectUris().stream().filter(s -> ((String) s).startsWith("https://")).findFirst().get());
         System.err.println(clientSecrets.getWeb().getClientSecret());
     }
 
@@ -56,5 +56,3 @@ System.err.println(appCredential);
         app.test();
     }
 }
-
-/* */

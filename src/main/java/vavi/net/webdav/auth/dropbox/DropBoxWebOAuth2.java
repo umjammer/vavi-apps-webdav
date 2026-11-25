@@ -8,9 +8,11 @@ package vavi.net.webdav.auth.dropbox;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxAuthFinish;
@@ -43,25 +45,25 @@ import vavi.net.webdav.auth.WebOAuth2;
 public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
 
     /** */
-    private WebAppCredential appCredential;
+    private final WebAppCredential appCredential;
 
     /** */
-    private DbxAppInfo appInfo;
+    private final DbxAppInfo appInfo;
 
     /** */
-    private DbxWebAuth webAuth;
+    private final DbxWebAuth webAuth;
 
     /** */
-    private URI authorizeUrl;
+    private final URI authorizeUrl;
 
     /** */
     private String redirectUri;
 
     /** */
-    private DbxSessionStore csrfTokenStore;
+    private final DbxSessionStore csrfTokenStore;
 
     /** */
-    private HttpSession dummySession = new HttpUtil.DummyHttpSession();
+    private final HttpSession dummySession = new HttpUtil.DummyHttpSession();
 
     /** */
     public DropBoxWebOAuth2(WebAppCredential appCredential) {
@@ -101,8 +103,8 @@ public class DropBoxWebOAuth2 implements WebOAuth2<String, String> {
 
     @Override
     public void setResult(String code, String state) {
-        redirectUri = appCredential.getRedirectUrl() + "?code=" + code + "&state=" + state;
+        String encodedCode = URLEncoder.encode(code, StandardCharsets.UTF_8);
+        String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+        redirectUri = appCredential.getRedirectUrl() + "?code=" + encodedCode + "&state=" + encodedState;
     }
 }
-
-/* */

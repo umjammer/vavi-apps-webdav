@@ -7,21 +7,23 @@
 package vavi.net.webdav.auth.google;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
-import java.util.Arrays;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.List;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-
-import vavi.net.auth.oauth2.Authenticator;
-import vavi.net.auth.oauth2.UserCredential;
-import vavi.net.auth.oauth2.google.GoogleAppCredential;
+import vavi.net.auth.Authenticator;
+import vavi.net.auth.UserCredential;
 import vavi.net.auth.oauth2.google.GoogleOAuth2;
+import vavi.net.auth.oauth2.google.GoogleOAuth2AppCredential;
 import vavi.net.webdav.auth.OAuthException;
 import vavi.net.webdav.auth.WebOAuth2;
-import vavi.util.Debug;
 import vavi.util.StringUtil;
 
 
@@ -36,35 +38,35 @@ import vavi.util.StringUtil;
  */
 public class GoogleWebAuthenticator implements Authenticator<Object, Credential>, WebOAuth2<Object, Credential> {
 
-//    private static final Logger LOG = LoggerFactory.getLogger(GoogleWebAuthenticator.class);
+    private static final Logger logger = System.getLogger(GoogleWebAuthenticator.class.getName());
 
     /** */
-    private GoogleAuthorizationCodeFlow flow;
+    private final GoogleAuthorizationCodeFlow flow;
 
     /** */
-    private String redirectUrl;
+    private final String redirectUrl;
 
     /** */
-    private String url;
+    private final String url;
 
     /** */
     private String code, state;
 
     /** */
-    public GoogleWebAuthenticator(GoogleAppCredential appCredential) {
+    public GoogleWebAuthenticator(GoogleOAuth2AppCredential appCredential) {
         try {
-            flow = new GoogleAuthorizationCodeFlow.Builder(GoogleOAuth2.HTTP_TRANSPORT,
-                                                           GoogleOAuth2.JSON_FACTORY,
+            flow = new GoogleAuthorizationCodeFlow.Builder(GoogleOAuth2.getHttpTransport(),
+                                                           GoogleOAuth2.getJsonFactory(),
                                                            appCredential.getRawData(),
-                                                           Arrays.asList(appCredential.getScope()))
+                                                           List.of(appCredential.getScope()))
                     .setDataStoreFactory(appCredential.getDataStoreFactory())
-                    .setAccessType("offline")
+                    .setAccessType(appCredential.getAccessType())
                     .build();
 
             redirectUrl = appCredential.getRedirectUrl();
             url = new AuthorizationCodeRequestUrl(appCredential.getOAuthAuthorizationUrl(), appCredential.getClientId())
                     .setRedirectUri(redirectUrl)
-                    .setScopes(Arrays.asList(appCredential.getScope()))
+                    .setScopes(List.of(appCredential.getScope()))
                     .build();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -76,27 +78,27 @@ public class GoogleWebAuthenticator implements Authenticator<Object, Credential>
      */
     @Override
     public Credential authorize(Object in) throws IOException {
-Debug.println("authorize arg: " + in.getClass());
+logger.log(Level.DEBUG, "authorize arg: " + in.getClass());
         if (code == null) {
             // first time: from OAuth2 as Authenticator
-            return authorizeFromOAurh2(UserCredential.class.cast(in));
+            return authorizeFromOAurh2((UserCredential) in);
         } else {
             // second time: from WebAuth2
-            return authorizeFromWebAuth2(String.class.cast(in));
+            return authorizeFromWebAuth2((String) in);
         }
     }
 
     /** @see "vavi.net.auth.oauth2.Authenticator" */
     private Credential authorizeFromOAurh2(UserCredential userCredential) throws IOException {
         Credential credential = flow.loadCredential(userCredential.getId());
-//Debug.println("credential: " + userCredential.getId() + ", " + credential);
+//logger.log(Level.DEBUG, "credential: " + userCredential.getId() + ", " + credential);
 //if (credential != null) {
-//Debug.println("refreshToken: " + credential.getRefreshToken());
-//Debug.println("expiresInSeconds: " + credential.getExpiresInSeconds());
+//logger.log(Level.DEBUG, "refreshToken: " + credential.getRefreshToken());
+//logger.log(Level.DEBUG, "expiresInSeconds: " + credential.getExpiresInSeconds());
 //}
         // web app doesn't return refresh token (null)
         if (credential != null && (credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60)) {
-Debug.println("refreshToken: " + (credential.getRefreshToken() != null) + ", expiresInSeconds: " + credential.getExpiresInSeconds());
+logger.log(Level.DEBUG, "refreshToken: " + (credential.getRefreshToken() != null) + ", expiresInSeconds: " + credential.getExpiresInSeconds());
             return credential;
         } else {
             throw new OAuthException(userCredential.getId());
@@ -109,27 +111,29 @@ Debug.println("refreshToken: " + (credential.getRefreshToken() != null) + ", exp
         TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUrl).execute();
         // store credential and return it
         Credential credential = flow.createAndStoreCredential(response, id);
-//Debug.println("credential: " + id + ", " + credential);
+//logger.log(Level.DEBUG, "credential: " + id + ", " + credential);
 //if (credential != null) {
-//Debug.println("refreshToken: " + credential.getRefreshToken());
-//Debug.println("expiresInSeconds: " + credential.getExpiresInSeconds());
+//logger.log(Level.DEBUG, "refreshToken: " + credential.getRefreshToken());
+//logger.log(Level.DEBUG, "expiresInSeconds: " + credential.getExpiresInSeconds());
 //}
         return credential;
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Override
     public URI getAuthorizationUrl() {
-        state = StringUtil.getRandomString();
+        byte[] randomBytes = new byte[24];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        state = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
         return URI.create(url + "&state=" + state);
     }
 
     @Override
     public void setResult(String code, String state) {
-        if (!this.state.equals(state)) {
+        if (this.state == null || !this.state.equals(state)) {
             throw new SecurityException("state is not same");
         }
         this.code = code;
     }
 }
-
-/* */

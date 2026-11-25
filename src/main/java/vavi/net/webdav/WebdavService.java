@@ -7,6 +7,8 @@
 package vavi.net.webdav;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -15,14 +17,12 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import vavi.net.http.HttpUtil;
 import vavi.net.webdav.auth.OAuthException;
-import vavi.net.webdav.auth.StrageDao;
 import vavi.net.webdav.auth.WebOAuth2;
 import vavi.nio.file.gathered.GatheredFileSystemProvider;
 import vavi.nio.file.gathered.NameMap;
@@ -36,16 +36,16 @@ import vavi.nio.file.gathered.NameMap;
  */
 public class WebdavService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebdavService.class);
+    private static final Logger logger = System.getLogger(WebdavService.class.getName());
 
     @Autowired
     private StrageDao dao;
 
     /** <id, FileSystem> */
-    private Map<String, FileSystem> fileSystems = new HashMap<>();
+    private final Map<String, FileSystem> fileSystems = new ConcurrentHashMap<>();
 
     /** <id, String> */
-    private NameMap nameMap = new NameMap();
+    private final NameMap nameMap = new NameMap();
 
     /** */
     private FileSystem registerFileSystem(String id) throws IOException {
@@ -70,16 +70,16 @@ public class WebdavService {
 
         dao.load().forEach(id -> {
             try {
-LOG.debug("ADD: " + id + "    ---------------------------------------------------");
+logger.log(Level.DEBUG, "ADD: " + id + "    ---------------------------------------------------");
                 if (!fileSystems.containsKey(id)) {
                     registerFileSystem(id);
                 }
             } catch (OAuthException e) {
-LOG.info("NOT LOGINED: " + id + ": " + e.getMessage());
+logger.log(Level.INFO, "NOT LOGINED: " + id + ": " + e.getMessage());
                 errors.put(id, e);
                 deregisterFileSystem(id);
             } catch (Exception e) {
-LOG.warn(id, e);
+logger.log(Level.WARNING, id, e);
                 deregisterFileSystem(id);
             }
         });
@@ -91,7 +91,7 @@ LOG.warn(id, e);
     public static final String URL_ROOT_PATH = "webdav";
 
     /** <scheme, Path> */
-    private Map<String, Path> rootPaths = new HashMap<>();
+    private Map<String, Path> rootPaths = new ConcurrentHashMap<>();
 
     /** */
     private Path gatheredFsRoot;
@@ -121,12 +121,15 @@ LOG.warn(id, e);
         }
 
         String id = nameMap.decodeFsName(parts[1]);
-System.err.println(id);
+logger.log(Level.DEBUG, id);
+        if (id == null || !fileSystems.containsKey(id)) {
+            throw new IllegalArgumentException("unknown storage: " + parts[1]);
+        }
         String path = String.join("/", Arrays.copyOfRange(parts, 2, parts.length));
 
         Path rootPath;
-        if (rootPaths.containsKey(parts[1])) {
-            rootPath = rootPaths.get(parts[1]);
+        if (rootPaths.containsKey(id)) {
+            rootPath = rootPaths.get(id);
         } else {
             FileSystem fs;
             if (fileSystems.containsKey(id)) {
@@ -154,24 +157,27 @@ System.err.println(id);
     }
 
     /** <state, WebOAuth2> */
-    private Map<String, WebOAuth2<?, ?>> sessionOAuth2s = new HashMap<>();
+    private Map<String, WebOAuth2<?, ?>> sessionOAuth2s = new ConcurrentHashMap<>();
 
     /** <state, idForScheme> */
-    private Map<String, String> sessionIds = new HashMap<>();
+    private Map<String, String> sessionIds = new ConcurrentHashMap<>();
 
     /**
      * @param id "scheme:your@id.com"
      */
     public String login(String id) {
         try {
-            String[] parts = id.split(":");
+            String[] parts = id.split(":", 2);
+            if (parts.length < 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                throw new IllegalArgumentException("invalid id format");
+            }
             String scheme = parts[0];
             String idForScheme = parts[1];
             WebOAuth2<?, ?> oauth2 = MyBeanFactory.getWebOAuth2(scheme);
             URI uri = oauth2.getAuthorizationUrl();
-LOG.debug("authorizationUrl: " + uri);
+logger.log(Level.DEBUG, "authorizationUrl: " + uri);
             String state = HttpUtil.splitQuery(uri).get("state")[0];
-LOG.debug("state: " + state + ", id: " + idForScheme);
+logger.log(Level.DEBUG, "state: " + state + ", id: " + idForScheme);
             sessionOAuth2s.put(state, oauth2);
             sessionIds.put(state, idForScheme);
             return uri.toString();
@@ -184,18 +190,20 @@ LOG.debug("state: " + state + ", id: " + idForScheme);
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void auth(String code, String state) {
         try {
-LOG.debug("state: " + state + ", code: " + code);
-            WebOAuth2 oauth2 = sessionOAuth2s.get(state);
-            String id = sessionIds.get(state);
+            if (state == null || code == null) {
+                throw new SecurityException("missing state or code");
+            }
+logger.log(Level.DEBUG, "state: " + state + ", code: " + (code != null));
+            WebOAuth2 oauth2 = sessionOAuth2s.remove(state);
+            String id = sessionIds.remove(state);
+            if (oauth2 == null || id == null) {
+                throw new SecurityException("invalid or expired state");
+            }
             oauth2.setResult(code, state);
             oauth2.authorize(id);
-            sessionOAuth2s.remove(state);
-            sessionIds.remove(state);
-LOG.debug("auth done: " + id);
+logger.log(Level.DEBUG, "auth done: " + id);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 }
-
-/* */

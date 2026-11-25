@@ -6,6 +6,9 @@
 
 package vavi.net.webdav.auth.microsoft;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Env;
@@ -21,6 +24,8 @@ import vavi.util.properties.annotation.PropsEntity;
  */
 @PropsEntity
 public class MicrosoftWebAppCredential extends WebAppCredential {
+
+    private static final Logger logger = System.getLogger(MicrosoftWebAppCredential.class.getName());
 
     @Env(name = "ONEDRIVE_CLIENT_ID")
     private String clientId;
@@ -41,19 +46,19 @@ public class MicrosoftWebAppCredential extends WebAppCredential {
 
     @Override
     public String getClientId() {
-Debug.println(clientId);
+logger.log(Level.DEBUG, clientId);
         return clientId;
     }
 
     @Override
     public String getClientSecret() {
-Debug.println(clientSecret);
+logger.log(Level.DEBUG, "clientSecret: " + (clientSecret != null));
         return clientSecret;
     }
 
     @Override
     public String getRedirectUrl() {
-Debug.println(redirectUrl);
+logger.log(Level.DEBUG, redirectUrl);
         return redirectUrl;
     }
 
@@ -72,5 +77,3 @@ Debug.println(redirectUrl);
         return "Files.ReadWrite.All Sites.ReadWrite.All User.Read offline_access";
     }
 }
-
-/* */

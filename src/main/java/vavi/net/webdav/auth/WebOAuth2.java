@@ -8,8 +8,6 @@ package vavi.net.webdav.auth;
 
 import java.net.URI;
 
-import org.scribe.exceptions.OAuthException;
-
 import vavi.net.auth.oauth2.OAuth2;
 
 
@@ -30,5 +28,3 @@ public interface WebOAuth2<I, O> extends OAuth2<I, O> {
     /** TODO */
     void setResult(String code, String state);
 }
-
-/* */

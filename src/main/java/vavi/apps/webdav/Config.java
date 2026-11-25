@@ -12,6 +12,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -31,21 +32,23 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
-import com.github.fge.filesystem.box.provider.BoxFileSystemProvider;
-import com.github.fge.fs.dropbox.provider.DropBoxFileSystemProvider;
+import com.github.fge.filesystem.box.BoxFileSystemProvider;
+import com.github.fge.fs.dropbox.DropBoxFileSystemProvider;
+import com.google.api.client.util.store.DataStoreFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import vavi.net.webdav.JavaFsWebDavServlet;
-import vavi.net.webdav.SqlStrageDao;
+import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.WebdavService;
-import vavi.net.webdav.auth.StrageDao;
 import vavi.net.webdav.auth.WebOAuth2;
 import vavi.net.webdav.auth.WebUserCredential;
 import vavi.net.webdav.auth.box.BoxWebAppCredential;
+import vavi.net.webdav.auth.box.BoxWebFsOAuth2;
 import vavi.net.webdav.auth.box.BoxWebOAuth2;
 import vavi.net.webdav.auth.dropbox.DropBoxWebAppCredential;
 import vavi.net.webdav.auth.dropbox.DropBoxWebOAuth2;
+import vavi.net.webdav.auth.google.DaoDataStoreFactory;
 import vavi.net.webdav.auth.google.GoogleWebAppCredential;
 import vavi.net.webdav.auth.google.GoogleWebAuthenticator;
 import vavi.net.webdav.auth.microsoft.MicrosoftWebAppCredential;
@@ -69,6 +72,12 @@ public class Config {
     @Value("${spring.datasource.url}")
     private String dbUrl;
 
+    @Value("${spring.datasource.username:}")
+    private String dbUsername;
+
+    @Value("${spring.datasource.password:}")
+    private String dbPassword;
+
     @Bean
     public DataSource dataSource() throws SQLException {
         if (dbUrl == null || dbUrl.isEmpty()) {
@@ -76,6 +85,12 @@ public class Config {
         } else {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(dbUrl);
+            if (dbUsername != null && !dbUsername.isEmpty()) {
+                config.setUsername(dbUsername);
+            }
+            if (dbPassword != null && !dbPassword.isEmpty()) {
+                config.setPassword(dbPassword);
+            }
             return new HikariDataSource(config);
         }
     }
@@ -117,7 +132,10 @@ public class Config {
         // https://stackoverflow.com/questions/53300497/encoded-precent25-with-spring-requestmapping-path-param-gives-http-400
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedPercent(true);
-        firewall.setUnsafeAllowAnyHttpMethod(true);
+        firewall.setAllowedHttpMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS",
+                "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK"
+        ));
         return firewall;
     }
 
@@ -159,6 +177,11 @@ public class Config {
     BoxWebAppCredential boxAppCredential;
     @Autowired
     DropBoxWebAppCredential dropboxAppCredential;
+
+    @Bean
+    DataStoreFactory dataStoreFactory() {
+        return new DaoDataStoreFactory(strageDao()); // TODO strageDao
+    }
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -204,6 +227,7 @@ public class Config {
             env.put("ignoreAppleDouble", true);
             break;
         case "box":
+            System.setProperty(BoxWebFsOAuth2.PROPERTY_OAUTH2, BoxWebFsOAuth2.class.getName());
             env.put(BoxFileSystemProvider.ENV_APP_CREDENTIAL, boxAppCredential);
             env.put(BoxFileSystemProvider.ENV_USER_CREDENTIAL, new WebUserCredential(idForScheme));
             env.put("ignoreAppleDouble", true);
@@ -222,5 +246,3 @@ public class Config {
         return fs;
     }
 }
-
-/* */

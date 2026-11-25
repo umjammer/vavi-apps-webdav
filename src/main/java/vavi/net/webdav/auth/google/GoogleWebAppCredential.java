@@ -16,9 +16,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
 
-import vavi.net.auth.oauth2.google.GoogleBaseAppCredential;
+import vavi.net.auth.oauth2.google.GoogleBaseOAuth2AppCredential;
 import vavi.net.auth.oauth2.google.GoogleOAuth2;
-import vavi.net.webdav.auth.StrageDao;
 
 
 /**
@@ -29,20 +28,20 @@ import vavi.net.webdav.auth.StrageDao;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2020/05/03 umjammer initial version <br>
  */
-public class GoogleWebAppCredential extends GoogleBaseAppCredential {
+public class GoogleWebAppCredential extends GoogleBaseOAuth2AppCredential {
 
     /** Application name. TODO app credential? */
     private static final String APPLICATION_NAME = "vavi-apps-webdav";
 
     @Autowired
-    private StrageDao dao;
+    private DataStoreFactory dataStoreFactory;
 
     /** */
     public GoogleWebAppCredential() {
         try {
             // Load client secrets.
             String appCredential = System.getenv("GOOGLEDRIVE_CLIENT_SECRET");
-            clientSecrets = GoogleClientSecrets.load(GoogleOAuth2.JSON_FACTORY, new StringReader(appCredential));
+            clientSecrets = GoogleClientSecrets.load(GoogleOAuth2.getJsonFactory(), new StringReader(appCredential));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -50,7 +49,7 @@ public class GoogleWebAppCredential extends GoogleBaseAppCredential {
 
     @Override
     protected Predicate<? super String> getFilter() {
-        return s -> String.class.cast(s).startsWith("https://");
+        return s -> s.startsWith("https://");
     }
 
     @Override
@@ -70,8 +69,11 @@ public class GoogleWebAppCredential extends GoogleBaseAppCredential {
 
     /** */
     public DataStoreFactory getDataStoreFactory() throws IOException {
-        return new SqlDataStoreFactory(dao);
+        return dataStoreFactory;
+    }
+
+    @Override
+    public String getScheme() {
+        return APPLICATION_NAME;
     }
 }
-
-/* */

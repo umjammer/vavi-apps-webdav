@@ -7,13 +7,13 @@
 package vavi.net.webdav.auth;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import vavi.net.auth.oauth2.AppCredential;
+import vavi.net.auth.AppCredential;
 import vavi.net.auth.oauth2.BaseTokenRefresher;
+import vavi.net.webdav.StrageDao;
 
 
 /**
@@ -24,36 +24,34 @@ import vavi.net.auth.oauth2.BaseTokenRefresher;
  */
 public class BasicWebTokenRefresher extends BaseTokenRefresher<String> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BasicWebTokenRefresher.class);
+    private static final Logger logger = System.getLogger(BasicWebTokenRefresher.class.getName());
 
-    private String schemeId;
+    private final String schemeId;
 
-    private WebAppCredential appCredential;
+    private final StrageDao strageDao;
 
     /** */
     public BasicWebTokenRefresher(AppCredential appCredential, String id, Supplier<Long> refresh) {
         super(refresh);
         this.schemeId = appCredential.getScheme() + ":" + id;
-        this.appCredential = WebAppCredential.class.cast(appCredential);
+        this.strageDao = ((WebAppCredential) appCredential).getStrageDao();
     }
 
     @Override
     public void writeRefreshToken(String refreshToken) throws IOException {
-LOG.debug("save refreshToken [" + schemeId + "]: " + refreshToken);
-        appCredential.getStrageDao().update(schemeId, refreshToken);
+logger.log(Level.DEBUG, "save refreshToken [" + schemeId + "]: " + (refreshToken != null));
+        strageDao.update(schemeId, refreshToken);
     }
 
     @Override
     public String readRefreshToken() throws IOException {
-        String refreshToken = appCredential.getStrageDao().select(schemeId);
-LOG.debug("load refreshToken [" + schemeId + "]: " + refreshToken);
+        String refreshToken = strageDao.select(schemeId);
+logger.log(Level.DEBUG, "load refreshToken [" + schemeId + "]: " + (refreshToken != null));
         return refreshToken;
     }
 
     @Override
-    public void dispose() throws IOException {
-        appCredential.getStrageDao().update(schemeId, null);
+    public void close() {
+        strageDao.update(schemeId, null);
     }
 }
-
-/* */

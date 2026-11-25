@@ -7,13 +7,16 @@
 package vavi.net.webdav.auth.dropbox;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.function.Supplier;
 
 import com.dropbox.core.DbxAuthInfo;
 import com.dropbox.core.json.JsonReadException;
 
-import vavi.net.auth.oauth2.AppCredential;
+import vavi.net.auth.AppCredential;
 import vavi.net.auth.oauth2.TokenRefresher;
+import vavi.net.webdav.StrageDao;
 import vavi.net.webdav.auth.WebAppCredential;
 import vavi.util.Debug;
 
@@ -26,34 +29,36 @@ import vavi.util.Debug;
  */
 public class DropBoxWebTokenRefresher implements TokenRefresher<DbxAuthInfo> {
 
-    private String schemeId;
+    private static final Logger logger = System.getLogger(DropBoxWebTokenRefresher.class.getName());
 
-    private WebAppCredential appCredential;
+    private final String schemeId;
+
+    private final StrageDao strageDao;
 
     /**
      * @param refresh you should call {@link #writeRefreshToken(DbxAuthInfo)} and return new refresh delay.
      */
     public DropBoxWebTokenRefresher(AppCredential appCredential, String id, Supplier<Long> refresh) {
         this.schemeId = appCredential.getScheme() + ":" + id;
-        this.appCredential = WebAppCredential.class.cast(appCredential);
+        this.strageDao = ((WebAppCredential) appCredential).getStrageDao();
     }
 
     @Override
     public void writeRefreshToken(DbxAuthInfo authInfo) throws IOException {
-Debug.println("refreshToken: " + authInfo.getRefreshToken());
+logger.log(Level.DEBUG, "refreshToken: " + (authInfo.getRefreshToken() != null));
         String json = DbxAuthInfo.Writer.writeToString(authInfo, true);
-        appCredential.getStrageDao().update(schemeId, json);
+        strageDao.update(schemeId, json);
     }
 
     @Override
     public DbxAuthInfo readRefreshToken() throws IOException {
         try {
-            String json = appCredential.getStrageDao().select(schemeId);
+            String json = strageDao.select(schemeId);
             if (json == null) {
                 return null;
             }
             DbxAuthInfo authInfo = DbxAuthInfo.Reader.readFully(json);
-Debug.println("refreshToken: exists: " + authInfo.getRefreshToken());
+logger.log(Level.DEBUG, "refreshToken: exists: " + (authInfo.getRefreshToken() != null));
             return authInfo;
         } catch (JsonReadException e) {
             throw new IOException(e);
@@ -61,17 +66,11 @@ Debug.println("refreshToken: exists: " + authInfo.getRefreshToken());
     }
 
     @Override
-    public void dispose() throws IOException {
-        appCredential.getStrageDao().update(schemeId, null);
+    public void close() {
+        strageDao.update(schemeId, null);
     }
 
     @Override
     public void start(DbxAuthInfo refreshToken, long refreshDelay) throws IOException {
     }
-
-    @Override
-    public void terminate() {
-    }
 }
-
-/* */

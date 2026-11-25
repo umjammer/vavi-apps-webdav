@@ -6,7 +6,7 @@
 
 package vavi.net.webdav.auth;
 
-import vavi.net.auth.oauth2.WithTotpUserCredential;
+import vavi.net.auth.WithTotpUserCredential;
 
 
 /**
@@ -17,7 +17,7 @@ import vavi.net.auth.oauth2.WithTotpUserCredential;
  */
 public class WebUserCredential implements WithTotpUserCredential {
 
-    private String id;
+    private final String id;
 
     public WebUserCredential(String id) {
         this.id = id;
@@ -38,5 +38,3 @@ public class WebUserCredential implements WithTotpUserCredential {
         return null;
     }
 }
-
-/* */
